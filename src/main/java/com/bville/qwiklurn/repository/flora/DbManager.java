@@ -7,6 +7,8 @@ package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.FloraClass;
 import com.bville.qwiklurn.swing.Criteriator;
+import com.github.mongobee.Mongobee;
+import com.github.mongobee.exception.MongobeeException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -52,27 +54,33 @@ public class DbManager {
     public static final String MEDIA_GRIDFS = "gridFs";
     public static final String MEDIA_GRIDFS_ID = "gridFsId";
 
-    private static final String COLL_FLORA = "Fauna";
-    private static final String COLL_SPECIES = "Species";
+    private final String dbName = "Qwiklurn";
+    public static final String COLL_FLORA = "Fauna";
+    public static final String COLL_SPECIES = "Species";
 
-    private MongoDatabase dbInst;
+    public String getDbName() {
+        return dbName;
+    }
+    
+    
+    public void setUpDatabase() {
+        Mongobee runner = new Mongobee("mongodb://localhost:27017/" + getDbName());
+        runner.setDbName(getDbName());         // host must be set if not set in URI
+        runner.setChangeLogsScanPackage(
+                "com.bville.qwiklurn.database.changelogs"); // package to scan for changesets
 
-    public MongoDatabase connect() {
-        if (dbInst == null) {
-            String url = "mongodb://localhost:27017/QwikLearn";
-            MongoClient mongo = MongoClients.create(url);
-            dbInst = mongo.getDatabase("QwikLearn");
+        try {
+            runner.execute();
+        } catch (MongobeeException e) {
+            throw new RuntimeException("MongoBee failed to run", e);
         }
-        return dbInst;
     }
 
-    public long count(String soort) {
-        long counted = 0;
+    public MongoDatabase connect() {
+        String url = "mongodb://localhost:27017/" + getDbName();
+        MongoClient mongo = MongoClients.create(url);
+        return mongo.getDatabase(getDbName());
 
-        Bson filter = new BsonDocument("abc", new BsonString("xy"));
-        counted = connect().getCollection(COLL_FLORA).countDocuments(filter);
-
-        return counted;
     }
 
     public void saveFlora(IFloraSubType FloraElement) throws FileNotFoundException {
@@ -299,39 +307,6 @@ public class DbManager {
         BsonDocument doc = BsonDocument.parse(jsonString);
 
         db.getFloraCollection().find(doc).iterator().forEachRemaining(e -> {
-            result.add(documentToIFloraSubType((Document) e));
-        });
-
-        return result;
-    }
-
-    public List<IFloraSubType> hardcodedQuery() {
-        List<IFloraSubType> result = new ArrayList();
-
-        DbManager db = new DbManager();
-        db.getFloraCollection().aggregate(
-                Arrays.asList(
-                        Aggregates.match(or(eq("leafage", "ld"), eq("leafage", "d"))
-                        ))
-        ).iterator().forEachRemaining(e -> {
-            result.add(documentToIFloraSubType((Document) e));
-        });
-
-        return result;
-    }
-
-    public List<IFloraSubType> hardcodedQuery2() {
-        List<IFloraSubType> result = new ArrayList();
-
-        DbManager db = new DbManager();
-
-        BsonDocument leaf_ld = new BsonDocument("leafage", new BsonString("ld"));
-        BsonDocument leaf_d = new BsonDocument("leafage", new BsonString("d"));
-
-        Document orDoc = new Document("$or", Arrays.asList(
-                leaf_ld, leaf_d));
-
-        db.getFloraCollection().find(orDoc).iterator().forEachRemaining(e -> {
             result.add(documentToIFloraSubType((Document) e));
         });
 

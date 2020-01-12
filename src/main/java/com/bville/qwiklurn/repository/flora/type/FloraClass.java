@@ -40,6 +40,7 @@ import org.bson.types.ObjectId;
  * @author Bart
  */
 public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
+
     static final Color COLOR_VALIDATION_FAILED = Color.YELLOW;
     static final Color COLOR_VALIDATION_SUCCES = Color.WHITE;
     static final Color COLOR_READY_FOR_VALIDATION = Color.WHITE;
@@ -136,40 +137,59 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     public Document toBson() {
         Document a = new Document();
         a.put("_id", (getId() == null ? ObjectId.get() : getId()));
-        a.put("subType", new BsonString(getSubType().getCode()));
-        a.put("latinName", new BsonString(getLatinName()));
-        a.put("species", new BsonObjectId(getSpecies().getId()));
-        a.put("commonName", new BsonString(getCommonName()));
-        BsonArray mediaRefs = new BsonArray();
-        mediaReferences.forEach(t -> {
-            BsonDocument child = new BsonDocument();
-            child.append("type", new BsonString(DbManager.MEDIA_GRIDFS));
-            BsonObjectId tgt = ((BsonDocument) t).get(DbManager.MEDIA_GRIDFS_ID).asObjectId();
-            child.append("gridFsId", tgt.asObjectId());
-            mediaRefs.add(child);
-        });
-        a.put("mediaReferences", mediaRefs);
+        if (getSubType() != null) {
+            a.put("subType", new BsonString(getSubType().getCode()));
+        }
+        if (getLatinName() != null) {
+            a.put("latinName", new BsonString(getLatinName()));
+        }
+        if (getSpecies() != null) {
+            a.put("species", new BsonObjectId(getSpecies().getId()));
+        }
+        if (commonName != null) {
+            a.put("commonName", new BsonString(getCommonName()));
+        }
+        if (mediaReferences != null) {
+            BsonArray mediaRefs = new BsonArray();
+            mediaReferences.forEach(t -> {
+                BsonDocument child = new BsonDocument();
+                child.append("type", new BsonString(DbManager.MEDIA_GRIDFS));
+                BsonObjectId tgt = ((BsonDocument) t).get(DbManager.MEDIA_GRIDFS_ID).asObjectId();
+                child.append("gridFsId", tgt.asObjectId());
+                mediaRefs.add(child);
+            });
+            a.put("mediaReferences", mediaRefs);
+        }
+        if (getFunctionTypes() != null) {
+            a.put("functions", getFunctionTypes().stream().map((t) -> {
+                return t.getCode();
+            }).collect(Collectors.toList()));
+        }
 
-        a.put("functions", getFunctionTypes().stream().map((t) -> {
-            return t.getCode();
-        }).collect(Collectors.toList()));
+        if (getSoilTypes() != null) {
+            a.put("soilTypes", getSoilTypes().stream().map((t) -> {
+                return t.getCode();
+            }).collect(Collectors.toList()));
+        }
 
-        a.put("soilTypes", getSoilTypes().stream().map((t) -> {
-            return t.getCode();
-        }).collect(Collectors.toList()));
+        if (getSolarTypes() != null) {
+            a.put("solarTypes", getSolarTypes().stream().map((t) -> {
+                return t.getCode();
+            }).collect(Collectors.toList()));
+        }
 
-        a.put("solarTypes", getSolarTypes().stream().map((t) -> {
-            return t.getCode();
-        }).collect(Collectors.toList()));
+        if (getFunctionTypes() != null) {
+            a.put("specials", getSpecialProperties().keySet().stream().map((t) -> {
+                BsonDocument elem = new BsonDocument();
+                elem.append("code", new BsonString(t.getCode()));
+                elem.append("value", new BsonString(getSpecialProperties().get(t)));
+                return elem;
+            }).collect(Collectors.toList()));
+        }
 
-        a.put("specials", getSpecialProperties().keySet().stream().map((t) -> {
-            BsonDocument elem = new BsonDocument();
-            elem.append("code", new BsonString(t.getCode()));
-            elem.append("value", new BsonString(getSpecialProperties().get(t)));
-            return elem;
-        }).collect(Collectors.toList()));
-
-        a.put("season", getSeason().getCode());
+        if (getSeason() != null) {
+            a.put("season", getSeason().getCode());
+        }
 
         if (getMaxHeight() != null) {
             a.put("maxHeight", new BsonInt32(getMaxHeight()));
@@ -189,7 +209,7 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
         if (getWinterLeaves() != null) {
             a.put("winterLeaf", new BsonBoolean(getWinterLeaves()));
         }
-        
+
         a.put("modificationDate", new Date());
         a.put("interrogationDate", null);
         return a;
