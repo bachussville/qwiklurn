@@ -1,0 +1,11 @@
+
+Op de planning:
+   - Vaste planten
+        - toepasbaar als bodembedekker ? J/N 
+
+   - Waterplanten
+        - waterfunctie (decoratief, zuurstof, algdempend)
+        - Plantdiepte
+        - Plantafstand
+
+

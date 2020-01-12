@@ -1,0 +1,435 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.bville.qwiklurn.repository.flora;
+
+import com.bville.qwiklurn.repository.flora.type.FloraClass;
+import com.bville.qwiklurn.swing.Criteriator;
+import com.mongodb.MongoWriteException;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Updates.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.swing.JOptionPane;
+import org.bson.BsonDocument;
+import org.bson.BsonObjectId;
+import org.bson.BsonString;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
+/**
+ *
+ * @author Bart
+ */
+public class DbManager {
+
+    public static final String filepath_No_Pic = "D:\\JavaDev\\NetBeansProjects\\qwiklurn\\Pictures\\NoImageFound.jpg";
+    public String dummyFileId = "5df2dfddc653863f9211ad10";
+
+    public static final String MEDIA_FILEUPLOAD = "fileUpload";
+    public static final String MEDIA_GRIDFS = "gridFs";
+    public static final String MEDIA_GRIDFS_ID = "gridFsId";
+
+    private static final String COLL_FLORA = "Fauna";
+    private static final String COLL_SPECIES = "Species";
+
+    private MongoDatabase dbInst;
+
+    public MongoDatabase connect() {
+        if (dbInst == null) {
+            String url = "mongodb://localhost:27017/QwikLearn";
+            MongoClient mongo = MongoClients.create(url);
+            dbInst = mongo.getDatabase("QwikLearn");
+        }
+        return dbInst;
+    }
+
+    public long count(String soort) {
+        long counted = 0;
+
+        Bson filter = new BsonDocument("abc", new BsonString("xy"));
+        counted = connect().getCollection(COLL_FLORA).countDocuments(filter);
+
+        return counted;
+    }
+
+    public void saveFlora(IFloraSubType FloraElement) throws FileNotFoundException {
+        final FloraClass FloraElementWithMedia = (FloraClass) uploadNewFiles(FloraElement);
+
+        if (FloraElementWithMedia.getId() != null) {
+            Species currentSpecies = getFloraById(FloraElementWithMedia.getId()).getSpecies();
+            updateSpeciesForFlora(FloraElementWithMedia, currentSpecies, FloraElementWithMedia.getSpecies());
+
+            getFloraCollection().updateOne(eq("_id", new ObjectId(FloraElementWithMedia.getId().toHexString())),
+                    combine(
+                            set("subType", FloraElementWithMedia.getSubType().getCode()),
+                            set("species", FloraElementWithMedia.getSpecies().getId()),
+                            set("latinName", FloraElementWithMedia.getLatinName()),
+                            set("commonName", FloraElementWithMedia.getCommonName()),
+                            set("functions", FloraElementWithMedia.getFunctionTypes().stream().map((t) -> {
+                                return t.getCode();
+                            }).collect(Collectors.toList())),
+                            set("soilTypes", FloraElementWithMedia.getSoilTypes().stream().map((t) -> {
+                                return t.getCode();
+                            }).collect(Collectors.toList())),
+                            set("solarTypes", FloraElementWithMedia.getSolarTypes().stream().map((t) -> {
+                                return t.getCode();
+                            }).collect(Collectors.toList())),
+                            set("specials", FloraElementWithMedia.getSpecialProperties().keySet().stream().map((t) -> {
+                                BsonDocument elem = new BsonDocument();
+                                elem.append("code", new BsonString(t.getCode()));
+                                elem.append("value", new BsonString(FloraElementWithMedia.getSpecialProperties().get(t)));
+                                return elem;
+                            }).collect(Collectors.toList())),
+                            set("season", FloraElementWithMedia.getSeason().getCode()),
+                            set("mediaReferences", FloraElementWithMedia.getMediaReferences()),
+                            set("maxHeight", FloraElementWithMedia.getMaxHeight()),
+                            set("maxWidth", FloraElementWithMedia.getMaxWidth()),
+                            set("color", FloraElementWithMedia.getColor()),
+                            set("winterLeaf", FloraElementWithMedia.getWinterLeaves()),
+                            set("maintenance", FloraElementWithMedia.getMaintenance()),
+                            set("modificationDate", new Date()),
+                            set("interrogationDate", FloraElementWithMedia.getInterrogationDate())
+                    ));
+
+            updateSubTypeSpecificAttributes(FloraElementWithMedia);
+
+        } else {
+            try {
+
+                if (FloraElement.getSpecies().getId() == null) {
+                    //insert the new species and retrieve it's objectId
+                    ObjectId speciesId = updateSpeciesForFlora(FloraElementWithMedia, null, FloraElementWithMedia.getSpecies());
+                    FloraElementWithMedia.setSpecies(speciesId);
+                }
+
+                Document newDoc = FloraElementWithMedia.toBson();
+                getFloraCollection().insertOne(newDoc);
+                FloraElementWithMedia.setId(newDoc.getObjectId("_id"));
+                updateSpeciesForFlora(FloraElementWithMedia, null, FloraElementWithMedia.getSpecies());
+                updateSubTypeSpecificAttributes(FloraElementWithMedia);
+
+            } catch (MongoWriteException e) {
+                if (e.getError().getCode() == 11000) {
+                    JOptionPane.showMessageDialog(null, "Dit element bestaat reeds. Gelieve aan te passen ipv toe te voegen");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Dit element kon niet opgeslagen worden. Meer info in de output logging");
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    private void updateSubTypeSpecificAttributes(IFlora element) {
+        HashMap<String, Object> updAttrList = ((IFloraSubType) element).getUpdateAttributesList();
+        updAttrList.forEach((s, v) -> {
+            getFloraCollection().updateOne(eq("_id", new ObjectId(element.getId().toHexString())),
+                    combine(
+                            set("" + s, v)
+                    ));
+        }
+        );
+
+    }
+
+    private ObjectId updateSpeciesForFlora(FloraClass floraElement, Species currentSpecies, Species newSpecies) {
+        if (currentSpecies != null) {
+            currentSpecies.getMembers().removeIf(m -> {
+                return m.compareTo(floraElement.getId()) == 0;
+            });
+
+            saveSpecies(currentSpecies);
+        }
+
+        if (floraElement.getId() != null && newSpecies.getMembers().stream()
+                .filter(o -> {
+                    return ((ObjectId) o).compareTo(floraElement.getId()) == 0;
+                })
+                .findFirst().isEmpty()) {
+            newSpecies.getMembers().add(floraElement.getId());
+
+        }
+        saveSpecies(newSpecies);
+
+        return newSpecies.getId();
+    }
+
+    public void saveSpecies(Species species) {
+        if (species.getId() != null) {
+            getSpeciesCollection().updateOne(eq("_id", species.getId()),
+                    combine(
+                            set("name", species.getName()),
+                            set("members", species.getMembers())
+                    ));
+        } else {
+            getSpeciesCollection().insertOne(species.toBson());
+            species.setId(((Document) getSpeciesCollection().find(new Document("name", species.getName())).first()).getObjectId("_id"));
+        }
+
+    }
+
+    public void updateFloraValidationDate(IFloraSubType FloraElement) throws FileNotFoundException {
+        if (FloraElement.getId() != null) {
+            getFloraCollection().updateOne(eq("_id", new ObjectId(FloraElement.getId().toHexString())),
+                    combine(
+                            set("interrogationDate", new Date())
+                    ));
+        }
+
+    }
+
+    public MongoCollection getFloraCollection() {
+        return connect().getCollection(COLL_FLORA);
+    }
+
+    public MongoCollection getSpeciesCollection() {
+        return connect().getCollection(COLL_SPECIES);
+    }
+
+    public IFloraSubType getFloraById(ObjectId id) {
+        FindIterable a = getFloraCollection().find(eq("_id", new ObjectId(id.toHexString())));
+
+        return documentToIFloraSubType((Document) a.first());
+
+    }
+
+    public Species getSpeciesById(ObjectId speciesId) {
+        if (speciesId == null) {
+            return null;
+        }
+        FindIterable a = getSpeciesCollection().find(eq("_id", speciesId));
+        Document specDoc = (Document) a.first();
+
+        return Species.fromBson(specDoc);
+
+    }
+
+    public List<Species> listSpecies() {
+        Document sortCrit = new Document();
+        sortCrit.append("name", 1);
+
+        MongoCursor a = getSpeciesCollection().find().sort(sortCrit).iterator();
+
+        List<Species> result = new ArrayList();
+        a.forEachRemaining(d -> {
+            result.add(Species.fromBson((Document) d));
+        });
+
+        return result;
+
+    }
+
+    public List<IFloraSubType> listFloraTypesAlphabetically() {
+        Document sortCrit = new Document();
+        sortCrit.append("latinName", 1);
+        MongoCursor a = getFloraCollection().find()
+                //                .limit(100)
+                .sort(sortCrit).iterator();
+
+        List<IFloraSubType> result = new ArrayList();
+        a.forEachRemaining(e -> {
+            result.add(documentToIFloraSubType((Document) e));
+        });
+
+        return result;
+    }
+
+    public List<IFloraSubType> listFloraTypesByLeastTested() {
+        Document sortCrit = new Document();
+        sortCrit.append("modificationDate", 1);
+        List<IFloraSubType> result = new ArrayList();
+
+        getFloraCollection().aggregate(
+                Arrays.asList(
+                        Aggregates.match(Filters.eq("interrogationDate", null)),
+                        //                        Aggregates.limit(100),
+                        Aggregates.sort(sortCrit)
+                )
+        ).iterator().forEachRemaining(e -> {
+            result.add(documentToIFloraSubType((Document) e));
+        });
+
+        Document sortCrit2 = new Document();
+        sortCrit2.append("interrogationDate", 1);
+
+        getFloraCollection().aggregate(
+                Arrays.asList(
+                        Aggregates.match(Filters.ne("interrogationDate", null)),
+                        //                        Aggregates.limit(100),
+                        Aggregates.sort(sortCrit2)
+                )
+        ).iterator().forEachRemaining(e -> {
+            result.add(documentToIFloraSubType((Document) e));
+        });
+
+        return result;
+
+    }
+
+    public List<IFloraSubType> customFilter(Criteriator.CriteriumGroup g) {
+        List<IFloraSubType> result = new ArrayList();
+
+        DbManager db = new DbManager();
+        List<Bson> aggregations = new ArrayList<>();
+
+        String jsonString = appendAggregationsForGroup(aggregations, g);
+        BsonDocument doc = BsonDocument.parse(jsonString);
+
+        db.getFloraCollection().find(doc).iterator().forEachRemaining(e -> {
+            result.add(documentToIFloraSubType((Document) e));
+        });
+
+        return result;
+    }
+
+    public List<IFloraSubType> hardcodedQuery() {
+        List<IFloraSubType> result = new ArrayList();
+
+        DbManager db = new DbManager();
+        db.getFloraCollection().aggregate(
+                Arrays.asList(
+                        Aggregates.match(or(eq("leafage", "ld"), eq("leafage", "d"))
+                        ))
+        ).iterator().forEachRemaining(e -> {
+            result.add(documentToIFloraSubType((Document) e));
+        });
+
+        return result;
+    }
+
+    public List<IFloraSubType> hardcodedQuery2() {
+        List<IFloraSubType> result = new ArrayList();
+
+        DbManager db = new DbManager();
+
+        BsonDocument leaf_ld = new BsonDocument("leafage", new BsonString("ld"));
+        BsonDocument leaf_d = new BsonDocument("leafage", new BsonString("d"));
+
+        Document orDoc = new Document("$or", Arrays.asList(
+                leaf_ld, leaf_d));
+
+        db.getFloraCollection().find(orDoc).iterator().forEachRemaining(e -> {
+            result.add(documentToIFloraSubType((Document) e));
+        });
+
+        return result;
+    }
+
+    private IFloraSubType uploadNewFiles(IFloraSubType FloraElement) throws FileNotFoundException {
+
+        if (FloraElement.getMediaReferences() == null || FloraElement.getMediaReferences().size() == 0) {
+            return FloraElement;
+        }
+
+        for (int i = 0; i < FloraElement.getMediaReferences().size(); i++) {
+            if (FloraElement.getMediaReferences().get(i) instanceof File) {
+                ObjectId createdId;
+                if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(filepath_No_Pic)) {
+                    createdId = new ObjectId(dummyFileId);
+                } else {
+                    createdId = saveFileInGridFs((File) FloraElement.getMediaReferences().get(i));
+                }
+
+                BsonDocument replaceValue = new BsonDocument();
+                replaceValue.put("type", new BsonString(MEDIA_GRIDFS));
+                replaceValue.put(MEDIA_GRIDFS_ID, new BsonObjectId(createdId));
+
+                FloraElement.getMediaReferences().set(i, replaceValue);
+            }
+        }
+        return FloraElement;
+
+    }
+
+    private ObjectId saveFileInGridFs(File toSave) throws FileNotFoundException {
+        GridFSBucket grid = GridFSBuckets.create(connect(), COLL_FLORA + "Media");
+        ObjectId linkId = ObjectId.get();
+        //ObjectId newId = 
+        grid.uploadFromStream(linkId.toHexString(), new FileInputStream(toSave));
+
+        return linkId;
+    }
+
+    public File getTempFile(String id) throws IOException {
+        GridFSBucket grid = GridFSBuckets.create(connect(), COLL_FLORA + "Media");
+        File result = File.createTempFile("qwklrn", "tmp");
+        FileOutputStream out = new FileOutputStream(result);
+        grid.downloadToStream(id, out);
+
+        return result;
+    }
+
+    private String appendAggregationsForGroup(List<Bson> aggregations, Criteriator.CriteriumGroup g) {
+        StringBuffer jsonString = new StringBuffer("{" + g.oper.getCode() + ": [");
+        jsonString.append("");
+
+        g.elements.forEach(e -> {
+            if (e.isGroup) {
+                jsonString.append(appendAggregationsForGroup(aggregations, (Criteriator.CriteriumGroup) e) + ",");
+            } else {
+                jsonString.append(getJsonForBasicCriteria(e) + ",");
+            }
+        });
+
+        jsonString.replace(jsonString.length() - 1, jsonString.length(), "]}");
+
+        return jsonString.toString();
+
+    }
+
+    private String getJsonForBasicCriteria(Criteriator.Criterium e) {
+        if (e.o.supportsMultiValues) {
+            StringBuffer jsonStr = new StringBuffer();
+            if (e.attr.attr.equalsIgnoreCase("soilTypes")
+                    || e.attr.attr.equalsIgnoreCase("solarTypes")) {
+                jsonStr.append("{" + e.attr.attr + " : {" + e.o.dbFunction + " : [");
+                e.listValues.forEach(val -> {
+                    jsonStr.append("\"" + ((CodeDescrEnum) val).getCode() + "\",");
+                });
+                jsonStr.delete(jsonStr.length() - 1, jsonStr.length());
+                jsonStr.append("]}}");
+                return jsonStr.toString();
+            }
+
+        } else {
+            if (e.attr.attr.equalsIgnoreCase("soilTypes")
+                    || e.attr.attr.equalsIgnoreCase("solarTypes")) {
+                return "{" + e.attr.attr + " : {" + e.o.dbFunction + " : \"" + ((CodeDescrEnum) e.listValues.get(0)).getCode() + "\"}}";
+
+            } else {
+                return "{" + e.attr.attr + " : {" + e.o.dbFunction + " : \"" + e.listValues.get(0) + "\"}}";
+            }
+        }
+        throw new RuntimeException("Unable to build Json for criteria: " + e);
+    }
+
+    private IFloraSubType documentToIFloraSubType(Document document) {
+        FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
+        return FloraSubType.getInstance(document);
+
+    }
+
+}
