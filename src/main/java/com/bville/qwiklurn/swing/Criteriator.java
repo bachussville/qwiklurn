@@ -7,7 +7,7 @@ package com.bville.qwiklurn.swing;
 
 import com.bville.qwiklurn.repository.flora.CodeDescrEnum;
 import com.bville.qwiklurn.repository.flora.DbManager;
-import com.bville.qwiklurn.repository.flora.IFloraSubType;
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.SoilType;
 import com.bville.qwiklurn.repository.flora.SolarType;
 import java.awt.GridBagLayout;
@@ -414,7 +414,7 @@ public class Criteriator extends JFrame {
     }
 
     public List<IFloraSubType> runQuery() {
-        queryResults = db.findFloraFilter(BsonDocument.parse(mainCriteriumGroup.asJsonString()));
+        queryResults = db.findFloraByFilter(BsonDocument.parse(mainCriteriumGroup.asJsonString()));
 
         return queryResults;
     }

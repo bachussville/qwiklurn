@@ -5,6 +5,7 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.BushClass;
 import com.bville.qwiklurn.repository.flora.type.FloraClass;
 import com.bville.qwiklurn.repository.flora.type.TreeClass;

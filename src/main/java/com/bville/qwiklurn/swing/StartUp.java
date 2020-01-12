@@ -5,7 +5,7 @@
  */
 package com.bville.qwiklurn.swing;
 
-import com.bville.qwiklurn.repository.flora.IFloraSubType;
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.TreeClass;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;

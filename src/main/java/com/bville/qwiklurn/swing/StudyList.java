@@ -6,7 +6,7 @@
 package com.bville.qwiklurn.swing;
 
 import com.bville.qwiklurn.repository.flora.DbManager;
-import com.bville.qwiklurn.repository.flora.IFloraSubType;
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;

@@ -5,11 +5,11 @@
  */
 package com.bville.qwiklurn.repository.flora.type;
 
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
 import com.bville.qwiklurn.repository.flora.FunctionType;
-import com.bville.qwiklurn.repository.flora.IFlora;
-import com.bville.qwiklurn.repository.flora.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.SeasonType;
 import com.bville.qwiklurn.repository.flora.SoilType;
 import com.bville.qwiklurn.repository.flora.SolarType;
@@ -61,6 +61,8 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     private Boolean winterLeaves;
     private Date modificationDate;
     private Date interrogationDate;
+    
+    
 
     public void setAttributes(Document doc) {
         this.setId(doc.getObjectId("_id"));

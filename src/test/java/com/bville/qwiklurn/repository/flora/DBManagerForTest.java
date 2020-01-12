@@ -5,10 +5,13 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
-import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.type.TreeClass;
-import com.mongodb.DBCollection;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import static junit.framework.Assert.assertEquals;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 /**
  *
@@ -40,14 +43,32 @@ public class DBManagerForTest extends DbManager {
     public Document persistTreeClass(TreeClass tree) {
         Document treeAsDoc = tree.toBson();
         getFloraCollection().insertOne(tree.toBson());
+        /*
+        if(tree != null && tree.getSpecies() != null && tree.getSpecies().getId()getSpeciesById(tree.getSpecies().getId()) == null){
+            getSpeciesCollection().insertOne(tree.getSpecies());
+        }
+        */
         return treeAsDoc;
     }
 
     public TreeClass getDummyTree(String latinName) {
         TreeClass dummy = new TreeClass();
+        dummy.setId(ObjectId.get());
+        dummy.setSubType(FloraSubTypeEnum.TREE);
+        dummy.setFunctionTypes(new ArrayList<>());
+//        dummy.setSpecies(new Species(ObjectId.get(), "someSpecie", new ArrayList<>()));
         dummy.setLatinName(latinName);
         dummy.setCommonName("cName");
-
+        dummy.setMediaReferences(new ArrayList<>());
+        dummy.setMaxHeight(1000);
+        dummy.setMaxWidth(250);
+        dummy.setMaintenance("Maintenance: do it!");
+        dummy.setColor("kakigroen");
+        dummy.setWinterLeaves(Boolean.TRUE);
+        dummy.setSoilTypes(new ArrayList<>());
+        dummy.setSpecialProperties(new EnumMap<>(SpecialsType.class));
+        dummy.setSeason(SeasonType.HERFST);
+        
         return dummy;
     }
 }

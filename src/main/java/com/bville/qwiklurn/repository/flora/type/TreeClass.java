@@ -5,8 +5,8 @@
  */
 package com.bville.qwiklurn.repository.flora.type;
 
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
-import com.bville.qwiklurn.repository.flora.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.LeafageEnum;
 import com.bville.qwiklurn.repository.flora.TreeShapeEnum;
 import com.bville.qwiklurn.swing.DefaultGridBagConstraints;
@@ -33,6 +33,11 @@ public class TreeClass extends FloraClass implements IFloraSubType {
     
     private JComboBox<LeafageEnum> leafageComboBox;
     private JComboBox<TreeShapeEnum> treeShapeComboBox;
+
+    public TreeClass() {
+        this.leafageComboBox = new JComboBox<>();
+        this.treeShapeComboBox = new JComboBox<>();
+    }
 
 
 

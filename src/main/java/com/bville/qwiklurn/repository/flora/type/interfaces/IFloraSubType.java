@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.bville.qwiklurn.repository.flora;
+package com.bville.qwiklurn.repository.flora.type.interfaces;
 
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
 import com.bville.qwiklurn.swing.InterrogationSetup;
 import java.util.HashMap;
 import javax.swing.JPanel;

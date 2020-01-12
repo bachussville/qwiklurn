@@ -5,8 +5,8 @@
  */
 package com.bville.qwiklurn.repository.flora.type;
 
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
-import com.bville.qwiklurn.repository.flora.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.OptionalBooleanJCombobox;
 import com.bville.qwiklurn.swing.DefaultGridBagConstraints;
 import com.bville.qwiklurn.swing.InterrogationSetup;

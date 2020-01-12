@@ -5,6 +5,8 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
+import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
 import com.bville.qwiklurn.repository.flora.type.FloraClass;
 import com.bville.qwiklurn.swing.Criteriator;
 import com.github.mongobee.Mongobee;
@@ -82,7 +84,7 @@ public class DbManager {
 
     }
 
-    public void saveFlora(IFloraSubType element) throws FileNotFoundException {
+    public void saveFlora(IFloraSubType element) {
         final FloraClass FloraElementWithMedia = (FloraClass) uploadNewFiles(element);
 
         if (FloraElementWithMedia.getId() != null) {
@@ -232,9 +234,12 @@ public class DbManager {
             return null;
         }
         FindIterable a = getSpeciesCollection().find(eq("_id", speciesId));
-        Document specDoc = (Document) a.first();
-
-        return Species.fromBson(specDoc);
+        if (a.first() != null) {
+            Document specDoc = (Document) a.first();
+            return Species.fromBson(specDoc);
+        }else{
+            return null;
+        }
 
     }
 
@@ -300,17 +305,25 @@ public class DbManager {
 
     }
 
-    public List<IFloraSubType> findFloraFilter(BsonDocument filter) {
+    public List<IFloraSubType> findFloraByFilter(BsonDocument filter) {
         List<IFloraSubType> result = new ArrayList<>();
 
-        getFloraCollection().find(filter).iterator().forEachRemaining(e -> {
+        FindIterable findIter;
+        if (filter == null) {
+            findIter = getFloraCollection().find();
+
+        } else {
+            findIter = getFloraCollection().find().filter(filter);
+        }
+
+        findIter.iterator().forEachRemaining(e -> {
             result.add(documentToIFloraSubType((Document) e));
         });
 
         return result;
     }
 
-    private IFloraSubType uploadNewFiles(IFloraSubType FloraElement) throws FileNotFoundException {
+    private IFloraSubType uploadNewFiles(IFloraSubType FloraElement) {
 
         if (FloraElement.getMediaReferences() == null || FloraElement.getMediaReferences().size() == 0) {
             return FloraElement;
@@ -322,7 +335,11 @@ public class DbManager {
                 if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(filepath_No_Pic)) {
                     createdId = new ObjectId(dummyFileId);
                 } else {
-                    createdId = saveFileInGridFs((File) FloraElement.getMediaReferences().get(i));
+                    try {
+                        createdId = saveFileInGridFs((File) FloraElement.getMediaReferences().get(i));
+                    } catch (FileNotFoundException fnfe) {
+                        throw new RuntimeException("Unable to store selected files", fnfe);
+                    }
                 }
 
                 BsonDocument replaceValue = new BsonDocument();
@@ -330,6 +347,8 @@ public class DbManager {
                 replaceValue.put(MEDIA_GRIDFS_ID, new BsonObjectId(createdId));
 
                 FloraElement.getMediaReferences().set(i, replaceValue);
+            } else {
+                throw new RuntimeException("Only File is allow as classType for upload into the database");
             }
         }
         return FloraElement;
@@ -355,8 +374,8 @@ public class DbManager {
     }
 
     private IFloraSubType documentToIFloraSubType(Document document) {
-System.out.println("BVC 2 - " + document.getObjectId("_id").toHexString());          
-        
+        System.out.println("BVC 2 - " + document.getObjectId("_id").toHexString());
+
         FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
         return FloraSubType.getInstance(document);
 
