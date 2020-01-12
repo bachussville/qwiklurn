@@ -21,7 +21,11 @@ public class Species {
     private List<ObjectId> members;
 
     public Species(ObjectId id, String name, List<ObjectId> members) {
-        this.id = id;
+        if (id == null){
+            this.id = ObjectId.get();
+        }else{
+            this.id = id;
+        }
         this.name = name;
         this.members = members;
     }

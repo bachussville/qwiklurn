@@ -20,6 +20,8 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.Before;
@@ -44,44 +46,33 @@ public class DbManagerTest {
     }
 
     @Test
-    public void testConnect() {
-        MongoDatabase db = dbMgr.connect();
-        assertNotNull(db);
-    }
-
-    @Test
-    public void collectionsExist() {
-        MongoCollection floraCollection = dbMgr.getFloraCollection();
-        assertNotNull(floraCollection);
-        MongoCollection speciesCollection = dbMgr.getSpeciesCollection();
-        assertNotNull(speciesCollection);
-    }
-
-    @Test
-    public void validateUniqueIndexFlora() {
-        MongoCollection floraCollection = dbMgr.getFloraCollection();
-        Document doc = dbMgr.getDummyTree("u").toBson();
-        floraCollection.insertOne(doc);
-        try {
-            floraCollection.insertOne(doc);
-            fail("Duplicate shouldn't be inserted");
-        } catch (Exception e) {
-        }
-        
-   }
-
-    @Test
-    @Ignore
     public void testListAlphabetically() {
+        dbMgr.clearAllCollections();
         Document doc1 = dbMgr.persistTree("b_comesLast");
         Document doc2 = dbMgr.persistTree("a_ComesFirst");
 
         List<IFloraSubType> result = dbMgr.listFloraTypesAlphabetically();
         assertEquals(2, result.size());
-        assertEquals(doc2, result.get(0));
-        assertEquals(doc1, result.get(1));
+        assertEquals("doc2 should be first", result.get(0).getLatinName(), "a_ComesFirst");
+        assertEquals("doc1 should be last", result.get(1).getLatinName(), "b_comesLast");
+
     }
 
+    @Test
+    public void customFilter_SingleCondition() {
+        dbMgr.clearAllCollections();
+        Document doc1 = dbMgr.persistTree("b_comesLast");
+        Document doc2 = dbMgr.persistTree("a_ComesFirst");
+        
+        BsonDocument filter = new BsonDocument("latinName", new BsonString("a_ComesFirst"));
+        List<IFloraSubType> result = dbMgr.findFloraFilter(filter);
+        assertEquals(1, result.size());
+        assertEquals(result.get(0).getLatinName(), "a_ComesFirst");    
+        assertEquals(doc2.getObjectId("_id").toHexString(), result.get(0).getId().toHexString());    
+    }
+
+    
+    
     @Test
     @Ignore
     public void testListLeastedTested() {

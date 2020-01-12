@@ -32,6 +32,7 @@ public class SetupDbase {
         DBObject idxDef = new BasicDBObject();
         idxDef.put("latinName", Integer.parseInt("1"));
         DBObject idxOptions = new BasicDBObject();
+        idxOptions.put("name", "latinName_Unq");
         idxOptions.put("unique", true);
         flora.createIndex(idxDef, idxOptions);
         

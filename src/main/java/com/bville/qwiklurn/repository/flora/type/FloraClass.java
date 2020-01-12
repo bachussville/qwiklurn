@@ -63,7 +63,7 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     private Date interrogationDate;
 
     public void setAttributes(Document doc) {
-        this.setId(doc.get("_id", ObjectId.class));
+        this.setId(doc.getObjectId("_id"));
         this.setSubType(FloraSubTypeEnum.parse(doc.get("subType", String.class)));
         this.setSpecies(doc.getObjectId("species"));
         this.setLatinName(doc.get("latinName", String.class));
@@ -454,6 +454,7 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     }
 
     public FloraClass() {
+        this.id = ObjectId.get();
         this.dbMgr = new DbManager();
         this.subType = getSubType();
 

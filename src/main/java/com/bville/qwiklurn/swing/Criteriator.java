@@ -30,6 +30,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.table.TableModel;
+import org.bson.BsonDocument;
+import org.bson.conversions.Bson;
 
 /**
  *
@@ -143,6 +145,32 @@ public class Criteriator extends JFrame {
                         + (o == CriteriumOperator.LIKE ? ".*/i" : "");
             }
         }
+
+        public String getJsonForBasicCriteria(Criteriator.Criterium e) {
+            if (e.o.supportsMultiValues) {
+                StringBuffer jsonStr = new StringBuffer();
+                if (e.attr.attr.equalsIgnoreCase("soilTypes")
+                        || e.attr.attr.equalsIgnoreCase("solarTypes")) {
+                    jsonStr.append("{" + e.attr.attr + " : {" + e.o.dbFunction + " : [");
+                    e.listValues.forEach(val -> {
+                        jsonStr.append("\"" + ((CodeDescrEnum) val).getCode() + "\",");
+                    });
+                    jsonStr.delete(jsonStr.length() - 1, jsonStr.length());
+                    jsonStr.append("]}}");
+                    return jsonStr.toString();
+                }
+
+            } else {
+                if (e.attr.attr.equalsIgnoreCase("soilTypes")
+                        || e.attr.attr.equalsIgnoreCase("solarTypes")) {
+                    return "{" + e.attr.attr + " : {" + e.o.dbFunction + " : \"" + ((CodeDescrEnum) e.listValues.get(0)).getCode() + "\"}}";
+
+                } else {
+                    return "{" + e.attr.attr + " : {" + e.o.dbFunction + " : \"" + e.listValues.get(0) + "\"}}";
+                }
+            }
+            throw new RuntimeException("Unable to build Json for criteria: " + e);
+        }
     };
 
     public enum CriteriumGroupOperator implements CodeDescrEnum {
@@ -176,6 +204,25 @@ public class Criteriator extends JFrame {
         public CriteriumGroup(CriteriumGroup parentGroup) {
             super(parentGroup);
             isGroup = true;
+        }
+
+        public String asJsonString() {
+            List<Bson> aggregations = new ArrayList<>();
+            StringBuffer jsonString = new StringBuffer("{" + oper.getCode() + ": [");
+            jsonString.append("");
+
+            elements.forEach(e -> {
+                if (e.isGroup) {
+                    jsonString.append(((CriteriumGroup)e).asJsonString() + ",");
+                } else {
+                    jsonString.append(getJsonForBasicCriteria(e) + ",");
+                }
+            });
+
+            jsonString.replace(jsonString.length() - 1, jsonString.length(), "]}");
+
+            return jsonString.toString();
+
         }
     }
 
@@ -367,7 +414,7 @@ public class Criteriator extends JFrame {
     }
 
     public List<IFloraSubType> runQuery() {
-        queryResults = db.customFilter(mainCriteriumGroup);
+        queryResults = db.findFloraFilter(BsonDocument.parse(mainCriteriumGroup.asJsonString()));
 
         return queryResults;
     }

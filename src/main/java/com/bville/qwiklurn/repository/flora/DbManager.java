@@ -55,14 +55,13 @@ public class DbManager {
     public static final String MEDIA_GRIDFS_ID = "gridFsId";
 
     private final String dbName = "Qwiklurn";
-    public static final String COLL_FLORA = "Fauna";
+    public static final String COLL_FLORA = "Flora";
     public static final String COLL_SPECIES = "Species";
 
     public String getDbName() {
         return dbName;
     }
-    
-    
+
     public void setUpDatabase() {
         Mongobee runner = new Mongobee("mongodb://localhost:27017/" + getDbName());
         runner.setDbName(getDbName());         // host must be set if not set in URI
@@ -83,8 +82,8 @@ public class DbManager {
 
     }
 
-    public void saveFlora(IFloraSubType FloraElement) throws FileNotFoundException {
-        final FloraClass FloraElementWithMedia = (FloraClass) uploadNewFiles(FloraElement);
+    public void saveFlora(IFloraSubType element) throws FileNotFoundException {
+        final FloraClass FloraElementWithMedia = (FloraClass) uploadNewFiles(element);
 
         if (FloraElementWithMedia.getId() != null) {
             Species currentSpecies = getFloraById(FloraElementWithMedia.getId()).getSpecies();
@@ -127,7 +126,7 @@ public class DbManager {
         } else {
             try {
 
-                if (FloraElement.getSpecies().getId() == null) {
+                if (element.getSpecies().getId() == null) {
                     //insert the new species and retrieve it's objectId
                     ObjectId speciesId = updateSpeciesForFlora(FloraElementWithMedia, null, FloraElementWithMedia.getSpecies());
                     FloraElementWithMedia.setSpecies(speciesId);
@@ -140,12 +139,16 @@ public class DbManager {
                 updateSubTypeSpecificAttributes(FloraElementWithMedia);
 
             } catch (MongoWriteException e) {
+                throw e;
+                /*
                 if (e.getError().getCode() == 11000) {
                     JOptionPane.showMessageDialog(null, "Dit element bestaat reeds. Gelieve aan te passen ipv toe te voegen");
+
                 } else {
                     JOptionPane.showMessageDialog(null, "Dit element kon niet opgeslagen worden. Meer info in de output logging");
                     e.printStackTrace();
                 }
+                 */
             }
         }
 
@@ -297,16 +300,10 @@ public class DbManager {
 
     }
 
-    public List<IFloraSubType> customFilter(Criteriator.CriteriumGroup g) {
-        List<IFloraSubType> result = new ArrayList();
+    public List<IFloraSubType> findFloraFilter(BsonDocument filter) {
+        List<IFloraSubType> result = new ArrayList<>();
 
-        DbManager db = new DbManager();
-        List<Bson> aggregations = new ArrayList<>();
-
-        String jsonString = appendAggregationsForGroup(aggregations, g);
-        BsonDocument doc = BsonDocument.parse(jsonString);
-
-        db.getFloraCollection().find(doc).iterator().forEachRemaining(e -> {
+        getFloraCollection().find(filter).iterator().forEachRemaining(e -> {
             result.add(documentToIFloraSubType((Document) e));
         });
 
@@ -357,51 +354,9 @@ public class DbManager {
         return result;
     }
 
-    private String appendAggregationsForGroup(List<Bson> aggregations, Criteriator.CriteriumGroup g) {
-        StringBuffer jsonString = new StringBuffer("{" + g.oper.getCode() + ": [");
-        jsonString.append("");
-
-        g.elements.forEach(e -> {
-            if (e.isGroup) {
-                jsonString.append(appendAggregationsForGroup(aggregations, (Criteriator.CriteriumGroup) e) + ",");
-            } else {
-                jsonString.append(getJsonForBasicCriteria(e) + ",");
-            }
-        });
-
-        jsonString.replace(jsonString.length() - 1, jsonString.length(), "]}");
-
-        return jsonString.toString();
-
-    }
-
-    private String getJsonForBasicCriteria(Criteriator.Criterium e) {
-        if (e.o.supportsMultiValues) {
-            StringBuffer jsonStr = new StringBuffer();
-            if (e.attr.attr.equalsIgnoreCase("soilTypes")
-                    || e.attr.attr.equalsIgnoreCase("solarTypes")) {
-                jsonStr.append("{" + e.attr.attr + " : {" + e.o.dbFunction + " : [");
-                e.listValues.forEach(val -> {
-                    jsonStr.append("\"" + ((CodeDescrEnum) val).getCode() + "\",");
-                });
-                jsonStr.delete(jsonStr.length() - 1, jsonStr.length());
-                jsonStr.append("]}}");
-                return jsonStr.toString();
-            }
-
-        } else {
-            if (e.attr.attr.equalsIgnoreCase("soilTypes")
-                    || e.attr.attr.equalsIgnoreCase("solarTypes")) {
-                return "{" + e.attr.attr + " : {" + e.o.dbFunction + " : \"" + ((CodeDescrEnum) e.listValues.get(0)).getCode() + "\"}}";
-
-            } else {
-                return "{" + e.attr.attr + " : {" + e.o.dbFunction + " : \"" + e.listValues.get(0) + "\"}}";
-            }
-        }
-        throw new RuntimeException("Unable to build Json for criteria: " + e);
-    }
-
     private IFloraSubType documentToIFloraSubType(Document document) {
+System.out.println("BVC 2 - " + document.getObjectId("_id").toHexString());          
+        
         FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
         return FloraSubType.getInstance(document);
 
