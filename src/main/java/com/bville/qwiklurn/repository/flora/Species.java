@@ -5,8 +5,8 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -20,12 +20,14 @@ public class Species {
     private String name;
     private List<ObjectId> members;
 
+    public Species(String name) {
+        this.name = name;
+        this.members = new ArrayList<>();
+    }
+
+    
     public Species(ObjectId id, String name, List<ObjectId> members) {
-        if (id == null){
-            this.id = ObjectId.get();
-        }else{
-            this.id = id;
-        }
+        this.id = id;
         this.name = name;
         this.members = members;
     }
@@ -56,24 +58,26 @@ public class Species {
 
     public Document toBson() {
         Document doc = new Document();
-        
+
+        if (getId() != null) {
+            doc.put("_id", getId());
+        }
+
         doc.put("name", getName());
-        
-        doc.put("members", getMembers());        
-        
+        doc.put("members", getMembers());
+
         return doc;
     }
 
     public static Species fromBson(Document doc) {
-        return new Species(doc.getObjectId("_id")
-                , doc.getString("name")
-                , doc.getList("members", ObjectId.class));
-    }    
+        return new Species(doc.getObjectId("_id"),
+                doc.getString("name"),
+                doc.getList("members", ObjectId.class));
+    }
 
     @Override
     public String toString() {
         return name;
     }
 
-    
 }

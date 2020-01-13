@@ -45,7 +45,6 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     static final Color COLOR_VALIDATION_SUCCES = Color.WHITE;
     static final Color COLOR_READY_FOR_VALIDATION = Color.WHITE;
 
-    DbManager dbMgr;
     private ObjectId id;
     private FloraSubTypeEnum subType;
     private Species species;
@@ -61,13 +60,11 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     private Boolean winterLeaves;
     private Date modificationDate;
     private Date interrogationDate;
-    
-    
 
-    public void setAttributes(Document doc) {
+    public void setAttributes(Document doc, DbManager dbMgr) {
         this.setId(doc.getObjectId("_id"));
         this.setSubType(FloraSubTypeEnum.parse(doc.get("subType", String.class)));
-        this.setSpecies(doc.getObjectId("species"));
+        this.setSpecies(dbMgr.getSpeciesById(doc.getObjectId("species")));
         this.setLatinName(doc.get("latinName", String.class));
         this.setCommonName(doc.get("commonName", String.class));
         ArrayList medRefs = (ArrayList) doc.get("mediaReferences");
@@ -138,14 +135,16 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
 
     public Document toBson() {
         Document a = new Document();
-        a.put("_id", (getId() == null ? ObjectId.get() : getId()));
+        if (getId() != null) {
+            a.put("_id", getId());
+        }
         if (getSubType() != null) {
             a.put("subType", new BsonString(getSubType().getCode()));
         }
         if (getLatinName() != null) {
             a.put("latinName", new BsonString(getLatinName()));
         }
-        if (getSpecies() != null) {
+        if (getSpecies() != null && getSpecies().getId() != null) {
             a.put("species", new BsonObjectId(getSpecies().getId()));
         }
         if (commonName != null) {
@@ -305,10 +304,6 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
         this.species = species;
     }
 
-    public void setSpecies(ObjectId speciesId) {
-        this.species = dbMgr.getSpeciesById(speciesId);
-    }
-
     @Override
     public List<SoilType> getSoilTypes() {
         return soilTypes;
@@ -456,8 +451,6 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     }
 
     public FloraClass() {
-        this.id = ObjectId.get();
-        this.dbMgr = new DbManager();
         this.subType = getSubType();
 
         this.mediaReferences = new ArrayList<>();

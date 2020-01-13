@@ -92,9 +92,10 @@ public class Detail extends JFrame {
 
     List<IFloraSubType> dataList;
 
-    public Detail(String title, ActionType actionT, InterrogationSetup iSetup) throws HeadlessException, IOException {
+    public Detail(DbManager dbM, String title, ActionType actionT, InterrogationSetup iSetup) throws HeadlessException, IOException {
         super(title);
 
+        dbMgr = dbM;
         actionType = actionT;
         interrogationSetup = iSetup;
 
@@ -105,7 +106,6 @@ public class Detail extends JFrame {
 
         validatableComponents = new ArrayList();
         meReference = this;
-        dbMgr = new DbManager();
         setLayout(new GridBagLayout());
         DefaultGridBagConstraints c = new DefaultGridBagConstraints();
 

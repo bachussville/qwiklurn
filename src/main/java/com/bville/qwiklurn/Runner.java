@@ -19,16 +19,12 @@ import javax.swing.JOptionPane;
  */
 public class Runner {
 
-    DbManager db;
-    Detail detailScreen;
-    
-
     public static void main(String[] args) throws IOException {
         new Runner().run();
     }
 
     private void run() throws HeadlessException, IOException {
-        new StartUp().setVisible(true);
+        new StartUp(new DbManager()).setVisible(true);
         /*
         db = new DbManager();
 

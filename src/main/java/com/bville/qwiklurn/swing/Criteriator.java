@@ -236,7 +236,6 @@ public class Criteriator extends JFrame {
     -
     -
      */
-    public DbManager db = new DbManager();
     private CriteriumGroup mainCriteriumGroup;
     private final Criteriator meReference;
     private final ImmutableTableModel criteriaData;
@@ -413,8 +412,8 @@ public class Criteriator extends JFrame {
 
     }
 
-    public List<IFloraSubType> runQuery() {
-        queryResults = db.findFloraByFilter(BsonDocument.parse(mainCriteriumGroup.asJsonString()));
+    public List<IFloraSubType> runQuery(DbManager dbMgr) {
+        queryResults = dbMgr.findFloraByFilter(BsonDocument.parse(mainCriteriumGroup.asJsonString()));
 
         return queryResults;
     }

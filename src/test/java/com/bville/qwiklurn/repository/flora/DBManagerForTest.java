@@ -42,21 +42,15 @@ public class DBManagerForTest extends DbManager {
 
     public Document persistTreeClass(TreeClass tree) {
         Document treeAsDoc = tree.toBson();
-        getFloraCollection().insertOne(tree.toBson());
-        /*
-        if(tree != null && tree.getSpecies() != null && tree.getSpecies().getId()getSpeciesById(tree.getSpecies().getId()) == null){
-            getSpeciesCollection().insertOne(tree.getSpecies());
-        }
-        */
+        getFloraCollection().insertOne(treeAsDoc);
         return treeAsDoc;
     }
 
     public TreeClass getDummyTree(String latinName) {
         TreeClass dummy = new TreeClass();
-        dummy.setId(ObjectId.get());
         dummy.setSubType(FloraSubTypeEnum.TREE);
         dummy.setFunctionTypes(new ArrayList<>());
-//        dummy.setSpecies(new Species(ObjectId.get(), "someSpecie", new ArrayList<>()));
+        dummy.setSpecies(new Species("someSpecie"));
         dummy.setLatinName(latinName);
         dummy.setCommonName("cName");
         dummy.setMediaReferences(new ArrayList<>());

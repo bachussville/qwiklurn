@@ -5,6 +5,7 @@
  */
 package com.bville.qwiklurn.swing;
 
+import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.TreeClass;
 import java.awt.FlowLayout;
@@ -25,9 +26,11 @@ import javax.swing.JFrame;
  */
 public class StartUp extends JFrame {
 
+    private final DbManager dbMgr; 
     private final StartUp meReference;
 
-    public StartUp() throws HeadlessException {
+    public StartUp(DbManager dbM) throws HeadlessException {
+        dbMgr = dbM;
         meReference = this;
         init();
     }
@@ -41,7 +44,7 @@ public class StartUp extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Detail d = new Detail("Add new Flora", ActionType.ADD_NEW, null);
+                    Detail d = new Detail(dbMgr, "Add new Flora", ActionType.ADD_NEW, null);
                     List<IFloraSubType> dataList = new ArrayList<>();
                     dataList.add(new TreeClass());
                     d.setDataList(dataList);
@@ -60,7 +63,7 @@ public class StartUp extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    StudyList d = new StudyList(ActionType.STUDY, null);
+                    StudyList d = new StudyList(dbMgr, ActionType.STUDY, null);
                     d.alertDefaultQueryActivated();
                     d.setVisible(true);
                 } catch (HeadlessException ex) {
@@ -93,7 +96,7 @@ public class StartUp extends JFrame {
 
     void interrogationSetupComplete(InterrogationSetup iSetup) {
         try {
-            StudyList d = new StudyList(ActionType.INTERROGATION, iSetup);
+            StudyList d = new StudyList(dbMgr,ActionType.INTERROGATION, iSetup);
             d.alertDefaultQueryActivated();
             d.setVisible(true);
         } catch (HeadlessException ex) {

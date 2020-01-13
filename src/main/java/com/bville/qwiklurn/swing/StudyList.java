@@ -42,7 +42,7 @@ import org.bson.types.ObjectId;
 public class StudyList extends JFrame {
 
     private final StudyList meReference;
-    DbManager db;
+    DbManager dbMgr;
     private JTable table;
     private ImmutableTableModel tModel;
     boolean defaultQuery = true;
@@ -55,7 +55,7 @@ public class StudyList extends JFrame {
     public void refreshData() {
         if (defaultQuery) {
 
-            List<IFloraSubType> newList = db.listFloraTypesAlphabetically();
+            List<IFloraSubType> newList = dbMgr.listFloraTypesAlphabetically();
             if (actionType == ActionType.STUDY) {
                 table.getRowSorter().setSortKeys(Arrays.asList(new SortKey(1, SortOrder.ASCENDING)));
             }
@@ -65,7 +65,7 @@ public class StudyList extends JFrame {
             resetTableData(tModel, newList);
 
         } else {
-            resetTableData(tModel, criteriator.runQuery());
+            resetTableData(tModel, criteriator.runQuery(dbMgr));
         }
 
         repaint();
@@ -81,7 +81,8 @@ public class StudyList extends JFrame {
         refreshData();
     }
 
-    public StudyList(ActionType actionType, InterrogationSetup iSetup) throws HeadlessException {
+    public StudyList(DbManager dbM, ActionType actionType, InterrogationSetup iSetup) throws HeadlessException {
+        this.dbMgr = dbM;
         this.meReference = this;
         this.actionType = actionType;
         this.interrogationSetup = iSetup;
@@ -91,7 +92,6 @@ public class StudyList extends JFrame {
     private void init() {
         setTitle("Data Explorer");
 
-        db = new DbManager();
         criteriator = new Criteriator(this);
 
         String[] cols = {"ID", "Latijnse naam", "Vlaamse naam", "Laatste wijziging", "Laatste ondervraging"};
@@ -107,7 +107,7 @@ public class StudyList extends JFrame {
         });
 
         tModel = new ImmutableTableModel(data, cols);
-        dataList = db.listFloraTypesAlphabetically();
+        dataList = dbMgr.listFloraTypesAlphabetically();
 
         resetTableData(tModel, dataList);
 
@@ -174,7 +174,7 @@ public class StudyList extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     try {
-                        Detail det = new Detail("Detail", actionType, interrogationSetup);
+                        Detail det = new Detail(dbMgr, "Detail", actionType, interrogationSetup);
                         det.setDataList(dataList);
 
                         List<IFloraSubType> sortedDataList = new ArrayList(dataList.size());

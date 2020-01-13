@@ -37,10 +37,10 @@ public enum FloraSubTypeEnum {
         return descr;
     }
 
-    public IFloraSubType getInstance(Document content) {
+    public IFloraSubType getInstance(Document content, DbManager dbMgr) {
         try {
             IFloraSubType elem = (IFloraSubType) classImpl.getDeclaredConstructor().newInstance();
-            ((FloraClass)elem).setAttributes(content);
+            ((FloraClass)elem).setAttributes(content, dbMgr);
             elem.setSubTypeAttributes(content);
             return elem;
         } catch (Exception e) {

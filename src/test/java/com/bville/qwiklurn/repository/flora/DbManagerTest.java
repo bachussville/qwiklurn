@@ -31,6 +31,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,7 +50,7 @@ public class DbManagerTest {
     @Before
     public void before() {
         dbMgr = new DBManagerForTest();
-        dbMgr.setUpDatabase();
+        //dbMgr.setUpDatabase();
     }
 
     @Test
@@ -92,77 +93,167 @@ public class DbManagerTest {
     public void getDbName() {
         assertEquals("QwiklurnUnitTest", dbMgr.getDbName());
     }
-
-    @Test
-    public void saveTreeClass_newWithNewSpecies() {
-        dbMgr.clearAllCollections();
+    
+    private TreeClass getCompleteTreeClass(boolean forInsert) {
         TreeClass newTree = dbMgr.getDummyTree("new");
-        newTree.setId(null);
-
-        newTree.setId(null);
+        
         //SubType for TreeClass is TREE
         //newTree.setSubType(FloraSubTypeEnum.TREE);
         List<FunctionType> fTypes = new ArrayList<>();
-        fTypes.add(FunctionType.DECO);
+        fTypes.add(forInsert ? FunctionType.DECO : FunctionType.BIO);
         newTree.setFunctionTypes(fTypes);
-        Species species = new Species(null, "species", new ArrayList<>());
+        Species species = new Species(forInsert ? "species" : "anotherSpecies");
         newTree.setSpecies(species);
-        newTree.setLatinName("lName");
-        newTree.setCommonName("cName");
+        newTree.setLatinName(forInsert ? "lName" : "anotherLatinName");
+        newTree.setCommonName(forInsert ? "cName" :"anotherCommonName");
         List<Object> mediaRefs = new ArrayList<>();
         File mediaRefAsFile = null;
         try {
             mediaRefAsFile = File.createTempFile("Qwiklurn", "unitTest");
             FileWriter fw = new FileWriter(mediaRefAsFile);
-            fw.append("abc");
+            fw.append(forInsert ? "abc" : "xyz");
             fw.close();
         } catch (Exception e) {
             fail("Error writign temp file");
         }
-
         mediaRefs.add(mediaRefAsFile);
         newTree.setMediaReferences(mediaRefs);
-
-        newTree.setMaxHeight(200);
-        newTree.setMaxWidth(150);
-        newTree.setMaintenance("maintenance");
-        newTree.setColor("color");
-        newTree.setWinterLeaves(Boolean.FALSE);
-
+        newTree.setMaxHeight(forInsert ? 200 : 400);
+        newTree.setMaxWidth(forInsert ? 150 : 300);
+        newTree.setMaintenance(forInsert ? "maintenance" : "moreMaintenance");
+        newTree.setColor(forInsert ? "color" : "anotherColor");
+        newTree.setWinterLeaves(forInsert ? Boolean.FALSE : Boolean.TRUE);
         List<SoilType> soiltypes = new ArrayList();
-        soiltypes.add(SoilType.KALK_ARM);
+        soiltypes.add(forInsert ? SoilType.KALK_ARM : SoilType.HUMUS_ARM );
         newTree.setSoilTypes(soiltypes);
-
         Map<SpecialsType, String> specialProperties = new EnumMap<SpecialsType, String>(SpecialsType.class);
-        specialProperties.put(SpecialsType.GEUR, "lekker");
-
+        specialProperties.put(SpecialsType.GEUR, forInsert ? "lekker" : "nogLekkerder");
         newTree.setSpecialProperties(specialProperties);
+        newTree.setSeason(forInsert ? SeasonType.HERFST:SeasonType.VOORJAAR);
+        return newTree;
+    }
 
-        newTree.setSeason(SeasonType.HERFST);
+    private void validateTree(boolean forInsert, TreeClass readTreeClass, TreeClass newTree, Species readSpecies) {
+        assertNotNull(readTreeClass.getId().toHexString());
+        assertEquals(FloraSubTypeEnum.TREE, readTreeClass.getSubType());
+        assertEquals(forInsert ? FunctionType.DECO : FunctionType.BIO, readTreeClass.getFunctionTypes().get(0));
+        assertNotNull(readTreeClass.getSpecies());
+        assertEquals(forInsert ? "lName":"anotherLatinName", newTree.getLatinName());
+        assertEquals(forInsert ? "cName":"anotherCommonName", newTree.getCommonName());
+        assertEquals(newTree.getMediaReferences().size(), readTreeClass.getMediaReferences().size());
+        assertEquals(((BsonDocument)newTree.getMediaReferences().get(0)).getObjectId("gridFsId").getValue().toHexString()
+                , ((Document)readTreeClass.getMediaReferences().get(0)).getObjectId("gridFsId").toHexString());
+        assertEquals(forInsert ? 200:400, readTreeClass.getMaxHeight().longValue());
+        assertEquals(forInsert ? 150:300,  readTreeClass.getMaxWidth().longValue());
+        assertEquals(forInsert ? "maintenance":"moreMaintenance", readTreeClass.getMaintenance());
+        assertEquals(forInsert ? "color":"anotherColor", readTreeClass.getColor());
+        assertEquals(forInsert ? Boolean.FALSE: Boolean.TRUE, readTreeClass.getWinterLeaves());
+        assertEquals(forInsert ? SoilType.KALK_ARM:SoilType.HUMUS_ARM, readTreeClass.getSoilTypes().get(0));
+        assertEquals(forInsert ? "lekker":"nogLekkerder", readTreeClass.getSpecialProperties().get(SpecialsType.GEUR));
+        assertEquals(forInsert ? SeasonType.HERFST:SeasonType.VOORJAAR, readTreeClass.getSeason());
+        
+        assertEquals(newTree.getSpecies().getName(), readTreeClass.getSpecies().getName());
+        assertEquals(readTreeClass.getSpecies().getId().toHexString(), readSpecies.getId().toHexString());
+        assertEquals(readTreeClass.getId().toHexString(), readSpecies.getMembers().get(0).toHexString());
+    }
+    
+    @Test
+    public void saveTreeClass_newWithNewSpecies() {
+        dbMgr.clearAllCollections();
+        TreeClass newTree = getCompleteTreeClass(true);
+        assertNull(newTree.getId());
+        assertNull(newTree.getSpecies().getId());
 
         dbMgr.saveFlora(newTree);
 
-        TreeClass readValue = (TreeClass) dbMgr.getFloraById(newTree.getId());
+        TreeClass readTreeClass = (TreeClass) dbMgr.getFloraById(newTree.getId());
+        Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
 
-        assertNotNull(readValue.getId().toHexString());
-        assertEquals(FloraSubTypeEnum.TREE, readValue.getSubType());
-        assertEquals(FunctionType.DECO, readValue.getFunctionTypes().get(0));
-        assertEquals(null, readValue.getSpecies());
-        assertEquals("lName", newTree.getLatinName());
-        assertEquals("cName", newTree.getCommonName());
-        assertEquals(newTree.getMediaReferences().size(), readValue.getMediaReferences().size());
-        assertEquals(((BsonDocument)newTree.getMediaReferences().get(0)).getObjectId("gridFsId").getValue().toHexString()
-                , ((Document)readValue.getMediaReferences().get(0)).getObjectId("gridFsId").toHexString());
-        assertEquals(200, readValue.getMaxHeight().longValue());
-        assertEquals(150,  readValue.getMaxWidth().longValue());
-        assertEquals("maintenance", readValue.getMaintenance());
-        assertEquals("color", readValue.getColor());
-        assertEquals(Boolean.FALSE, readValue.getWinterLeaves());
-        assertEquals(SoilType.KALK_ARM, readValue.getSoilTypes().get(0));
-        assertEquals("lekker", readValue.getSpecialProperties().get(SpecialsType.GEUR));
-        assertEquals(SeasonType.HERFST, readValue.getSeason());
+        
+        validateTree(true, readTreeClass, newTree, readSpecies);
+        assertEquals(1, dbMgr.getFloraCollection().countDocuments());
+        assertEquals(1, dbMgr.getSpeciesCollection().countDocuments());
+        
     }
 
+    
+    @Test
+    public void saveTreeClass_newWithExistingSpecies() {
+        dbMgr.clearAllCollections();
+        
+        dbMgr.saveSpecies(new Species("species"));
+        Document dbSpecies = (Document)dbMgr.getSpeciesCollection().find().first();
+        
+        TreeClass newTree = getCompleteTreeClass(true);
+        newTree.setSpecies(dbMgr.getSpeciesById(dbSpecies.getObjectId("_id")));
+        
+        assertNull(newTree.getId());
+        assertNotNull(newTree.getSpecies().getId());
+        
+        dbMgr.saveFlora(newTree);
+
+        TreeClass readTreeClass = (TreeClass) dbMgr.getFloraById(newTree.getId());
+        Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
+
+        validateTree(true, readTreeClass, newTree, readSpecies);
+        assertEquals(1, dbMgr.getFloraCollection().countDocuments());
+        assertEquals(1, dbMgr.getSpeciesCollection().countDocuments());
+        
+    }
+    
+    @Test
+    public void saveTreeClass_existingWithNewSpecies() {
+        dbMgr.clearAllCollections();
+        TreeClass oldTree = getCompleteTreeClass(true);
+        assertNull(oldTree.getId());
+        assertNull(oldTree.getSpecies().getId());
+        dbMgr.saveFlora(oldTree);
+        ObjectId dbTreeId = ((Document)dbMgr.getFloraCollection().find().first()).getObjectId("_id");
+        
+        TreeClass updatedTree = getCompleteTreeClass(false);
+        updatedTree.setId(new ObjectId(dbTreeId.toHexString()));
+        
+        dbMgr.saveFlora(updatedTree);
+        
+        TreeClass readTreeClass = (TreeClass) dbMgr.getFloraById(updatedTree.getId());
+        Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
+
+        
+        validateTree(false, readTreeClass, updatedTree, readSpecies);
+        assertEquals(1, dbMgr.getFloraCollection().countDocuments());
+        assertEquals(2, dbMgr.getSpeciesCollection().countDocuments());
+    }
+    @Test
+    public void saveTreeClass_existingWithExistingSpecies() {
+        dbMgr.clearAllCollections();
+        dbMgr.saveSpecies(new Species("species"));
+        Document dbSpecies = (Document)dbMgr.getSpeciesCollection().find().first();
+        
+        TreeClass oldTree = getCompleteTreeClass(true);
+        oldTree.setSpecies(dbMgr.getSpeciesById(dbSpecies.getObjectId("_id")));
+        
+        assertNull(oldTree.getId());
+        assertNotNull(oldTree.getSpecies().getId());
+
+        dbMgr.saveFlora(oldTree);
+        ObjectId dbTreeId = ((Document)dbMgr.getFloraCollection().find().first()).getObjectId("_id");
+        
+        TreeClass updatedTree = getCompleteTreeClass(false);
+        updatedTree.setSpecies(dbMgr.getSpeciesById(dbSpecies.getObjectId("_id")));
+        updatedTree.setId(new ObjectId(dbTreeId.toHexString()));
+        
+        dbMgr.saveFlora(updatedTree);
+        
+        TreeClass readTreeClass = (TreeClass) dbMgr.getFloraById(updatedTree.getId());
+        Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
+
+        
+        validateTree(false, readTreeClass, updatedTree, readSpecies);
+        assertEquals(1, dbMgr.getFloraCollection().countDocuments());
+        assertEquals(1, dbMgr.getSpeciesCollection().countDocuments());
+    }    
+
+    
     @Test
     @Ignore
     public void saveFlora_update() {

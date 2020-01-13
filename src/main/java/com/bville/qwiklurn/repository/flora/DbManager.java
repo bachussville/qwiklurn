@@ -8,7 +8,6 @@ package com.bville.qwiklurn.repository.flora;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
 import com.bville.qwiklurn.repository.flora.type.FloraClass;
-import com.bville.qwiklurn.swing.Criteriator;
 import com.github.mongobee.Mongobee;
 import com.github.mongobee.exception.MongobeeException;
 import com.mongodb.MongoWriteException;
@@ -35,12 +34,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.JOptionPane;
 import org.bson.BsonDocument;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 /**
@@ -60,6 +57,10 @@ public class DbManager {
     public static final String COLL_FLORA = "Flora";
     public static final String COLL_SPECIES = "Species";
 
+    public DbManager() {
+    }
+
+    
     public String getDbName() {
         return dbName;
     }
@@ -128,16 +129,16 @@ public class DbManager {
         } else {
             try {
 
-                if (element.getSpecies().getId() == null) {
+                if (getSpeciesById(FloraElementWithMedia.getSpecies().getId()) == null) {
                     //insert the new species and retrieve it's objectId
                     ObjectId speciesId = updateSpeciesForFlora(FloraElementWithMedia, null, FloraElementWithMedia.getSpecies());
-                    FloraElementWithMedia.setSpecies(speciesId);
+                    FloraElementWithMedia.setSpecies(getSpeciesById(speciesId));
                 }
 
                 Document newDoc = FloraElementWithMedia.toBson();
                 getFloraCollection().insertOne(newDoc);
                 FloraElementWithMedia.setId(newDoc.getObjectId("_id"));
-                updateSpeciesForFlora(FloraElementWithMedia, null, FloraElementWithMedia.getSpecies());
+                updateSpeciesForFlora(FloraElementWithMedia, null, getSpeciesById(FloraElementWithMedia.getSpecies().getId()));
                 updateSubTypeSpecificAttributes(FloraElementWithMedia);
 
             } catch (MongoWriteException e) {
@@ -191,15 +192,17 @@ public class DbManager {
     }
 
     public void saveSpecies(Species species) {
-        if (species.getId() != null) {
+        Species current = getSpeciesById(species.getId());
+        if (current != null) {
             getSpeciesCollection().updateOne(eq("_id", species.getId()),
                     combine(
                             set("name", species.getName()),
                             set("members", species.getMembers())
                     ));
         } else {
-            getSpeciesCollection().insertOne(species.toBson());
-            species.setId(((Document) getSpeciesCollection().find(new Document("name", species.getName())).first()).getObjectId("_id"));
+            Document specDoc = species.toBson();
+            getSpeciesCollection().insertOne(specDoc);
+            species.setId(specDoc.getObjectId("_id"));
         }
 
     }
@@ -233,7 +236,7 @@ public class DbManager {
         if (speciesId == null) {
             return null;
         }
-        FindIterable a = getSpeciesCollection().find(eq("_id", speciesId));
+        FindIterable a = getSpeciesCollection().find(eq("_id", new ObjectId(speciesId.toHexString())));
         if (a.first() != null) {
             Document specDoc = (Document) a.first();
             return Species.fromBson(specDoc);
@@ -377,7 +380,7 @@ public class DbManager {
         System.out.println("BVC 2 - " + document.getObjectId("_id").toHexString());
 
         FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
-        return FloraSubType.getInstance(document);
+        return FloraSubType.getInstance(document, this);
 
     }
 
