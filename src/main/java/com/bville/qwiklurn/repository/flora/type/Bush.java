@@ -20,7 +20,7 @@ import org.bson.Document;
  *
  * @author Bart
  */
-public class BushClass extends FloraClass implements IFloraSubType {
+public class Bush extends GenericFlora implements IFloraSubType {
 
     private Boolean hedgeable = null;
 
@@ -51,7 +51,7 @@ public class BushClass extends FloraClass implements IFloraSubType {
         if(source == null){
             return;
         }
-        setHedgeable(((BushClass) source).getHedgeable());
+        setHedgeable(((Bush) source).getHedgeable());
     }
 
     @Override

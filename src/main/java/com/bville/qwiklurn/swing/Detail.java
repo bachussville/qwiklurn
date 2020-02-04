@@ -6,7 +6,7 @@
 package com.bville.qwiklurn.swing;
 
 import com.bville.qwiklurn.repository.flora.SoilType;
-import com.bville.qwiklurn.repository.flora.type.TreeClass;
+import com.bville.qwiklurn.repository.flora.type.Tree;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
 import com.bville.qwiklurn.repository.flora.SolarType;

@@ -7,12 +7,8 @@ package com.bville.qwiklurn.database.changelogs;
 
 import com.bville.qwiklurn.repository.flora.DBManagerForTest;
 import com.mongodb.MongoException;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import junit.framework.Assert;
-import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import org.bson.Document;
@@ -30,7 +26,7 @@ public class DBScriptsTest {
 
     @Before
     public void init(){
-        dbMgr = new DBManagerForTest();
+        dbMgr = new DBManagerForTest(null);
         MongoDatabase db = dbMgr.connect();
         db.drop();
 
@@ -39,7 +35,7 @@ public class DBScriptsTest {
         
     }
     @Test
-    public void uniqueIndexOnLatinNameIsActive() {
+    public void uniqueIndexForFloraIsActive() {
         MongoCollection f = dbMgr.getFloraCollection();
         Document doc = dbMgr.getDummyTree("u").toBson();
         Document doc2 = dbMgr.getDummyTree("u").toBson();
@@ -53,5 +49,19 @@ public class DBScriptsTest {
         }
 
     }
+    @Test
+    public void uniqueIndexForSpeciesIsActive() {
+        MongoCollection f = dbMgr.getSpeciesCollection();
+        Document doc = dbMgr.getDummySpecies("u").toBson();
+        Document doc2 = dbMgr.getDummySpecies("u").toBson();
+        f.insertOne(doc);
+        try {
+            f.insertOne(doc2);
+            fail("Duplicate shouldn't be inserted");
+        } catch (MongoException e) {
+            assertEquals(11000, e.getCode());
+            assertTrue("Wrong duplicate key", e.getMessage().indexOf("name_Unq") > 0);
+        }
 
+    }
 }

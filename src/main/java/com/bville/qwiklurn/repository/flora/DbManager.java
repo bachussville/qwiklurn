@@ -7,7 +7,7 @@ package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
-import com.bville.qwiklurn.repository.flora.type.FloraClass;
+import com.bville.qwiklurn.repository.flora.type.GenericFlora;
 import com.github.mongobee.Mongobee;
 import com.github.mongobee.exception.MongobeeException;
 import com.mongodb.MongoWriteException;
@@ -53,14 +53,16 @@ public class DbManager {
     public static final String MEDIA_GRIDFS = "gridFs";
     public static final String MEDIA_GRIDFS_ID = "gridFsId";
 
-    private final String dbName = "Qwiklurn";
+    private String dbName = "Qwiklurn";
     public static final String COLL_FLORA = "Flora";
     public static final String COLL_SPECIES = "Species";
 
-    public DbManager() {
+    public DbManager(String databaseName) {
+        if (databaseName != null) {
+            dbName = databaseName;
+        }
     }
 
-    
     public String getDbName() {
         return dbName;
     }
@@ -86,7 +88,7 @@ public class DbManager {
     }
 
     public void saveFlora(IFloraSubType element) {
-        final FloraClass FloraElementWithMedia = (FloraClass) uploadNewFiles(element);
+        final GenericFlora FloraElementWithMedia = (GenericFlora) uploadNewFiles(element);
 
         if (FloraElementWithMedia.getId() != null) {
             Species currentSpecies = getFloraById(FloraElementWithMedia.getId()).getSpecies();
@@ -169,7 +171,7 @@ public class DbManager {
 
     }
 
-    private ObjectId updateSpeciesForFlora(FloraClass floraElement, Species currentSpecies, Species newSpecies) {
+    private ObjectId updateSpeciesForFlora(GenericFlora floraElement, Species currentSpecies, Species newSpecies) {
         if (currentSpecies != null) {
             currentSpecies.getMembers().removeIf(m -> {
                 return m.compareTo(floraElement.getId()) == 0;
@@ -240,7 +242,7 @@ public class DbManager {
         if (a.first() != null) {
             Document specDoc = (Document) a.first();
             return Species.fromBson(specDoc);
-        }else{
+        } else {
             return null;
         }
 

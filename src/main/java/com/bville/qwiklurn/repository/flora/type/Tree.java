@@ -13,20 +13,17 @@ import com.bville.qwiklurn.swing.DefaultGridBagConstraints;
 import com.bville.qwiklurn.swing.InterrogationSetup;
 import com.bville.qwiklurn.swing.PropertyLabel;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import org.bson.Document;
 
 /**
  *
  * @author Bart
  */
-public class TreeClass extends FloraClass implements IFloraSubType {
+public class Tree extends GenericFlora implements IFloraSubType {
 
     private LeafageEnum leafage = null;
     private TreeShapeEnum treeShape = null;
@@ -34,7 +31,7 @@ public class TreeClass extends FloraClass implements IFloraSubType {
     private JComboBox<LeafageEnum> leafageComboBox;
     private JComboBox<TreeShapeEnum> treeShapeComboBox;
 
-    public TreeClass() {
+    public Tree() {
         this.leafageComboBox = new JComboBox<>();
         this.treeShapeComboBox = new JComboBox<>();
     }
@@ -120,9 +117,9 @@ public class TreeClass extends FloraClass implements IFloraSubType {
             return;
         }
         
-        if (source instanceof TreeClass) {
-            leafage = ((TreeClass) source).getLeafage();
-            treeShape = ((TreeClass) source).getTreeShape();
+        if (source instanceof Tree) {
+            leafage = ((Tree) source).getLeafage();
+            treeShape = ((Tree) source).getTreeShape();
         }
 
     }

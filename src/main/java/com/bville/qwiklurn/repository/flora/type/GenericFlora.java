@@ -15,17 +15,13 @@ import com.bville.qwiklurn.repository.flora.SoilType;
 import com.bville.qwiklurn.repository.flora.SolarType;
 import com.bville.qwiklurn.repository.flora.SpecialsType;
 import com.bville.qwiklurn.repository.flora.Species;
-import static com.mongodb.client.model.Updates.set;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
@@ -39,7 +35,7 @@ import org.bson.types.ObjectId;
  *
  * @author Bart
  */
-public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
+public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
 
     static final Color COLOR_VALIDATION_FAILED = Color.YELLOW;
     static final Color COLOR_VALIDATION_SUCCES = Color.WHITE;
@@ -450,7 +446,7 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
         this.interrogationDate = interrogationDate;
     }
 
-    public FloraClass() {
+    public GenericFlora() {
         this.subType = getSubType();
 
         this.mediaReferences = new ArrayList<>();
@@ -489,7 +485,7 @@ public abstract class FloraClass implements IFlora, Comparable<FloraClass> {
     }
 
     @Override
-    public int compareTo(FloraClass o) {
+    public int compareTo(GenericFlora o) {
         if (o == null) {
             return 1;
         }

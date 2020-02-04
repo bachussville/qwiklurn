@@ -5,13 +5,10 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
-import com.bville.qwiklurn.repository.flora.type.TreeClass;
+import com.bville.qwiklurn.repository.flora.type.Tree;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
-import static junit.framework.Assert.assertEquals;
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 /**
  *
@@ -19,11 +16,16 @@ import org.bson.types.ObjectId;
  */
 public class DBManagerForTest extends DbManager {
 
+    public DBManagerForTest(String databaseName) {
+        super("QwiklurnUnitTest");
+    }
+
+    /*
     @Override
     public String getDbName() {
         return super.getDbName() + "UnitTest"; //To change body of generated methods, choose Tools | Templates.
     }
-
+     */
     public void clearAllCollections() {
         clearCollection(DbManager.COLL_FLORA);
         clearCollection(DbManager.COLL_SPECIES);
@@ -40,14 +42,14 @@ public class DBManagerForTest extends DbManager {
 
     }
 
-    public Document persistTreeClass(TreeClass tree) {
+    public Document persistTreeClass(Tree tree) {
         Document treeAsDoc = tree.toBson();
         getFloraCollection().insertOne(treeAsDoc);
         return treeAsDoc;
     }
 
-    public TreeClass getDummyTree(String latinName) {
-        TreeClass dummy = new TreeClass();
+    public Tree getDummyTree(String latinName) {
+        Tree dummy = new Tree();
         dummy.setSubType(FloraSubTypeEnum.TREE);
         dummy.setFunctionTypes(new ArrayList<>());
         dummy.setSpecies(new Species("someSpecie"));
@@ -62,7 +64,12 @@ public class DBManagerForTest extends DbManager {
         dummy.setSoilTypes(new ArrayList<>());
         dummy.setSpecialProperties(new EnumMap<>(SpecialsType.class));
         dummy.setSeason(SeasonType.HERFST);
-        
+
+        return dummy;
+    }
+
+    public Species getDummySpecies(String latinName) {
+        Species dummy = new Species(latinName);
         return dummy;
     }
 }

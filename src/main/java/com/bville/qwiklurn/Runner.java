@@ -24,7 +24,7 @@ public class Runner {
     }
 
     private void run() throws HeadlessException, IOException {
-        new StartUp(new DbManager()).setVisible(true);
+        new StartUp(new DbManager(null)).setVisible(true);
         /*
         db = new DbManager();
 

@@ -6,9 +6,10 @@
 package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.type.BushClass;
-import com.bville.qwiklurn.repository.flora.type.FloraClass;
-import com.bville.qwiklurn.repository.flora.type.TreeClass;
+import com.bville.qwiklurn.repository.flora.type.Bush;
+import com.bville.qwiklurn.repository.flora.type.GenericFlora;
+import com.bville.qwiklurn.repository.flora.type.LastingPlant;
+import com.bville.qwiklurn.repository.flora.type.Tree;
 import org.bson.Document;
 
 /**
@@ -16,8 +17,9 @@ import org.bson.Document;
  * @author Bart
  */
 public enum FloraSubTypeEnum {
-    BUSH("h", "heester", BushClass.class),
-    TREE("b", "boom", TreeClass.class);
+    LASTING_PLANT("v", "vaste plant", LastingPlant.class),
+    BUSH("h", "heester", Bush.class),
+    TREE("b", "boom", Tree.class);
 
     private String code;
     private String descr;
@@ -40,7 +42,7 @@ public enum FloraSubTypeEnum {
     public IFloraSubType getInstance(Document content, DbManager dbMgr) {
         try {
             IFloraSubType elem = (IFloraSubType) classImpl.getDeclaredConstructor().newInstance();
-            ((FloraClass)elem).setAttributes(content, dbMgr);
+            ((GenericFlora)elem).setAttributes(content, dbMgr);
             elem.setSubTypeAttributes(content);
             return elem;
         } catch (Exception e) {
@@ -50,7 +52,7 @@ public enum FloraSubTypeEnum {
     public IFloraSubType getInstance(IFloraSubType content) {
         try {
             IFloraSubType elem = (IFloraSubType) classImpl.getDeclaredConstructor().newInstance();
-            ((FloraClass)elem).setAttributes(content, true);
+            ((GenericFlora)elem).setAttributes(content, true);
             
             elem.setSubTypeAttributes(content.getClass() == elem.getClass() ? content : null);
             return elem;
@@ -61,6 +63,9 @@ public enum FloraSubTypeEnum {
     
 
     public static FloraSubTypeEnum parse(String code) {
+        if (code.equalsIgnoreCase(LASTING_PLANT.getCode())) {
+            return LASTING_PLANT;
+        }
         if (code.equalsIgnoreCase(BUSH.getCode())) {
             return BUSH;
         }
