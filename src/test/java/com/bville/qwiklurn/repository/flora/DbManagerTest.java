@@ -7,6 +7,7 @@ package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.Tree;
+import com.google.common.collect.Lists;
 import com.mongodb.DBCollection;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -19,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +131,8 @@ public class DbManagerTest {
         Map<SpecialsType, String> specialProperties = new EnumMap<SpecialsType, String>(SpecialsType.class);
         specialProperties.put(SpecialsType.GEUR, forInsert ? "lekker" : "nogLekkerder");
         newTree.setSpecialProperties(specialProperties);
-        newTree.setSeason(forInsert ? SeasonType.HERFST:SeasonType.VOORJAAR);
+        newTree.setBlossomMonths(forInsert ? Arrays.asList(4):Arrays.asList(5));
+        newTree.setHarvestMonths(forInsert ? Arrays.asList(8):Arrays.asList(9));
         return newTree;
     }
 
@@ -150,7 +153,8 @@ public class DbManagerTest {
         assertEquals(forInsert ? Boolean.FALSE: Boolean.TRUE, readTreeClass.getWinterLeaves());
         assertEquals(forInsert ? SoilType.KALK_ARM:SoilType.HUMUS_ARM, readTreeClass.getSoilTypes().get(0));
         assertEquals(forInsert ? "lekker":"nogLekkerder", readTreeClass.getSpecialProperties().get(SpecialsType.GEUR));
-        assertEquals(forInsert ? SeasonType.HERFST:SeasonType.VOORJAAR, readTreeClass.getSeason());
+        assertEquals(forInsert ? "4":"5", ""+readTreeClass.getBlossomMonths().get(0));
+        assertEquals(forInsert ? "8":"9", ""+readTreeClass.getHarvestMonths().get(0));
         
         assertEquals(newTree.getSpecies().getName(), readTreeClass.getSpecies().getName());
         assertEquals(readTreeClass.getSpecies().getId().toHexString(), readSpecies.getId().toHexString());

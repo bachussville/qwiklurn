@@ -54,8 +54,10 @@ public interface IFlora {
 
     public Map<SpecialsType, String> getSpecialProperties();
 
-    public SeasonType getSeason();
+    public List<Integer> getBlossomMonths();
 
+    public List<Integer> getHarvestMonths();
+    
     //Setter
     public Date getModificationDate();
 
@@ -103,7 +105,9 @@ public interface IFlora {
 
     public void removeSpecialProperty(SpecialsType type);
 
-    public void setSeason(SeasonType season);
+    public void setBlossomMonths(List<Integer> months);
+
+    public void setHarvestMonths(List<Integer> months);
 
     public void setLatinName(String latinName);
 

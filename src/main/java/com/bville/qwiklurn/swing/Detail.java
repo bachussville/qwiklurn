@@ -6,14 +6,12 @@
 package com.bville.qwiklurn.swing;
 
 import com.bville.qwiklurn.repository.flora.SoilType;
-import com.bville.qwiklurn.repository.flora.type.Tree;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
 import com.bville.qwiklurn.repository.flora.SolarType;
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.FunctionType;
 import com.bville.qwiklurn.repository.flora.OptionalBooleanJCombobox;
-import com.bville.qwiklurn.repository.flora.SeasonType;
 import com.bville.qwiklurn.repository.flora.SpecialsType;
 import com.bville.qwiklurn.repository.flora.Species;
 import com.bville.qwiklurn.repository.flora.TreePruneEnum;
@@ -32,21 +30,17 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
-import javax.swing.table.TableModel;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -66,7 +60,6 @@ public class Detail extends JFrame {
     private JPanel soilPanel, functionPanel;
     private ImagePanel image;
     private JComboBox<FloraSubTypeEnum> FloraSubTypeList;
-    private JComboBox<SeasonType> seasonList;
     private JComboBox<Species> speciesCombo;
     private OptionalBooleanJCombobox winterLeafCombo;
     private ImmutableTableModel specialPropsModel;
@@ -74,9 +67,11 @@ public class Detail extends JFrame {
     private JButton newButton, saveButton, validateButton, nextFloraButton, previousFloraButton, previousMediaButton, nextMediaButton;
     private JTextField latinNameText, commonNameText, maxHeightText, maxWidthText, colorText;
     private JLabel refName;
-    private Map<String, JCheckBox> functionTypeCheckboxes = new TreeMap<String, JCheckBox>();
-    private Map<String, JCheckBox> soilTypeCheckboxes = new TreeMap<String, JCheckBox>();
-    private Map<String, JCheckBox> solarTypeCheckboxes = new TreeMap<String, JCheckBox>();
+    private final Map<String, JCheckBox> functionTypeCheckboxes = new TreeMap();
+    private final Map<String, JCheckBox> soilTypeCheckboxes = new TreeMap();
+    private final Map<String, JCheckBox> solarTypeCheckboxes = new TreeMap();
+    private final Map<Integer, JCheckBox> blossomMonthsCheckboxes = new TreeMap();
+    private final Map<Integer, JCheckBox> harvestMonthsCheckboxes = new TreeMap();
     private JTextArea maintenanceJTextArea;
     private JComboBox<TreePruneEnum> treePruneComboBox;
 
@@ -84,8 +79,8 @@ public class Detail extends JFrame {
 
     private IFloraSubType floraElement;
     private IFloraSubType prevFloraElement;
-    private ActionType actionType;
-    private InterrogationSetup interrogationSetup;
+    private final ActionType actionType;
+    private final InterrogationSetup interrogationSetup;
     private int listIdx = 0;
     private int activeMediaIdx = -1;
     private int maxMediaIdx = 0;
@@ -204,19 +199,26 @@ public class Detail extends JFrame {
                 floraElement.setMaxHeight(maxHeightText.getText().trim().length() > 0 ? Integer.valueOf(maxHeightText.getText().trim()) : null);
                 floraElement.setMaxWidth(maxWidthText.getText().trim().length() > 0 ? Integer.valueOf(maxWidthText.getText().trim()) : null);
                 floraElement.setColor(colorText.getText().trim().length() > 0 ? colorText.getText().trim() : null);
-                floraElement.setFunctionTypes(toSelectedValuesList(functionTypeCheckboxes).stream().map(v -> {
+                floraElement.setFunctionTypes(toSelectedStringsList(functionTypeCheckboxes).stream().map(v -> {
                     return FunctionType.parse(v);
                 }).collect(Collectors.toList()));
-                floraElement.setSoilTypes(toSelectedValuesList(soilTypeCheckboxes).stream().map(v -> {
+                floraElement.setSoilTypes(toSelectedStringsList(soilTypeCheckboxes).stream().map(v -> {
                     return SoilType.parse(v);
                 }).collect(Collectors.toList()));
-                floraElement.setSolarTypes(toSelectedValuesList(solarTypeCheckboxes).stream().map(v -> {
+                floraElement.setSolarTypes(toSelectedStringsList(solarTypeCheckboxes).stream().map(v -> {
                     return SolarType.parse(v);
                 }).collect(Collectors.toList()));
 
                 floraElement.setWinterLeaves(winterLeafCombo.getSelectedBooleanValue());
 
-                floraElement.setSeason((SeasonType) seasonList.getSelectedItem());
+                floraElement.setBlossomMonths(toSelectedIntegersList(blossomMonthsCheckboxes).stream().map(v -> {
+                    return Integer.valueOf(v);
+                }).collect(Collectors.toList()));
+
+                floraElement.setHarvestMonths(toSelectedIntegersList(harvestMonthsCheckboxes).stream().map(v -> {
+                    return Integer.valueOf(v);
+                }).collect(Collectors.toList()));
+
                 floraElement.getSpecialProperties().clear();
                 specialPropsModel.getDataVector().stream().forEach(v -> {
                     floraElement.getSpecialProperties().put((SpecialsType) v.get(0), v.get(1).toString());
@@ -256,7 +258,7 @@ public class Detail extends JFrame {
             commonNameText.setBackground(Color.YELLOW);
         }
 
-        List<String> selectedValues = toSelectedValuesList(functionTypeCheckboxes);
+        List<String> selectedValues = toSelectedStringsList(functionTypeCheckboxes);
         if (selectedValues.size() == floraElement.getFunctionTypes().size()) {
             selectedValues.removeIf(floraElement.getFunctionTypes().stream().map(s -> {
                 return s.getCode();
@@ -275,7 +277,7 @@ public class Detail extends JFrame {
 
         }
 
-        selectedValues = toSelectedValuesList(soilTypeCheckboxes);
+        selectedValues = toSelectedStringsList(soilTypeCheckboxes);
         if (selectedValues.size() == floraElement.getSoilTypes().size()) {
             selectedValues.removeIf(floraElement.getSoilTypes().stream().map(s -> {
                 return s.getCode();
@@ -294,7 +296,7 @@ public class Detail extends JFrame {
 
         }
 
-        selectedValues = toSelectedValuesList(solarTypeCheckboxes);
+        selectedValues = toSelectedStringsList(solarTypeCheckboxes);
         if (selectedValues.size() == floraElement.getSolarTypes().size()) {
             selectedValues.removeIf(floraElement.getSolarTypes().stream().map(s -> {
                 return s.getCode();
@@ -334,8 +336,20 @@ public class Detail extends JFrame {
 
     }
 
-    private List<String> toSelectedValuesList(Map<String, JCheckBox> map) {
+    private List<String> toSelectedStringsList(Map<String, JCheckBox> map) {
         List<String> actualValues = new ArrayList();
+
+        map.forEach((s, c) -> {
+            if (c.isSelected()) {
+                actualValues.add(s);
+            }
+        });
+
+        return actualValues;
+    }
+
+    private List<Integer> toSelectedIntegersList(Map<Integer, JCheckBox> map) {
+        List<Integer> actualValues = new ArrayList();
 
         map.forEach((s, c) -> {
             if (c.isSelected()) {
@@ -427,13 +441,11 @@ public class Detail extends JFrame {
         colorText.setPreferredSize(new Dimension(80, 20));
         validatableComponents.add(colorText);
 
-        PropertyLabel seasonListLabel = new PropertyLabel("Bloeiseizoen");
-        seasonList = new JComboBox<>();
-        validatableComponents.add(seasonList);
+        PropertyLabel blossomMonthsLabel = new PropertyLabel("Bloeimaanden");
+        JPanel blossomMonthsPanel = getBlossomMonthsPanel();
 
-        for (int i = 0; i < SeasonType.values().length; i++) {
-            seasonList.insertItemAt(SeasonType.values()[i], i);
-        }
+        PropertyLabel harvestMonthsLabel = new PropertyLabel("Oogstmaanden");
+        JPanel harvestMonthsPanel = getHarvestMonthsPanel();
 
         PropertyLabel specialsLabel = new PropertyLabel("Specifieke kenmerken");
         String[] cols = {"Type", "Omschrijving"};
@@ -585,9 +597,15 @@ public class Detail extends JFrame {
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(seasonListLabel, c);
+        panel.add(blossomMonthsLabel, c);
         c.gridx++;
-        panel.add(seasonList, c);
+        panel.add(blossomMonthsPanel, c);
+
+        c.gridx = 0;
+        c.gridy++;
+        panel.add(harvestMonthsLabel, c);
+        c.gridx++;
+        panel.add(harvestMonthsPanel, c);
 
         c.gridx = 0;
         c.gridy++;
@@ -726,7 +744,20 @@ public class Detail extends JFrame {
 
         colorText.setText(floraElement.getColor() != null ? "" + floraElement.getColor() : "");
 
-        seasonList.setSelectedItem(floraElement.getSeason());
+        blossomMonthsCheckboxes.values().forEach(c -> {
+            c.setSelected(false);
+        });
+        harvestMonthsCheckboxes.values().forEach(c -> {
+            c.setSelected(false);
+        });
+        if (floraElement != null) {
+            floraElement.getBlossomMonths().forEach(s -> {
+                blossomMonthsCheckboxes.get(s).setSelected(true);
+            });
+            floraElement.getHarvestMonths().forEach(s -> {
+                harvestMonthsCheckboxes.get(s).setSelected(true);
+            });
+        }
 
         for (int i = 0; i < specialPropsModel.getRowCount();) {
             specialPropsModel.removeRow(0);
@@ -892,6 +923,56 @@ public class Detail extends JFrame {
         return solarPanel;
     }
 
+    private JPanel getBlossomMonthsPanel() {
+        JPanel blossomMonthsPanel = new JPanel();
+
+        blossomMonthsPanel.setLayout(new GridBagLayout());
+        DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
+        cbc.fill = cbc.HORIZONTAL;
+        SolarType[] solarTypes = SolarType.values();
+
+        for (int i = 0; i < 12; i++) {
+
+            cbc.gridx++;
+            String name = String.format("%d", i + 1);
+            JCheckBox cb = new JCheckBox(getMonthName(i + 1));
+            blossomMonthsCheckboxes.put(i + 1, cb);
+            cb.setName(name);
+            validatableComponents.add(cb);
+
+            cbc.gridy = 0;
+            blossomMonthsPanel.add(cb, cbc);
+
+        }
+
+        return blossomMonthsPanel;
+    }
+
+    private JPanel getHarvestMonthsPanel() {
+        JPanel harvestMonthsPanel = new JPanel();
+
+        harvestMonthsPanel.setLayout(new GridBagLayout());
+        DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
+        cbc.fill = cbc.HORIZONTAL;
+        SolarType[] solarTypes = SolarType.values();
+
+        for (int i = 0; i < 12; i++) {
+
+            cbc.gridx++;
+            String name = String.format("%d", i + 1);
+            JCheckBox cb = new JCheckBox(getMonthName(i + 1));
+            harvestMonthsCheckboxes.put(i + 1, cb);
+            cb.setName(name);
+            validatableComponents.add(cb);
+
+            cbc.gridy = 0;
+            harvestMonthsPanel.add(cb, cbc);
+
+        }
+
+        return harvestMonthsPanel;
+    }
+
     private JPanel getMediaPanel(DbManager dbMgr) throws IOException {
         photoPanel = new JPanel();
         photoPanel.setLayout(new GridBagLayout());
@@ -1003,5 +1084,24 @@ public class Detail extends JFrame {
         result[1] = "B";
 
         return result;
+    }
+
+    private String getMonthName(int i) {
+        switch (i) {
+            case 1: return "jan";
+            case 2: return "feb";
+            case 3: return "maa";
+            case 4: return "apr";
+            case 5: return "mei";
+            case 6: return "jun";
+            case 7: return "jul";
+            case 8: return "aug";
+            case 9: return "sep";
+            case 10: return "okt";
+            case 11: return "nov";
+            case 12: return "dec";
+        };
+        
+        throw new RuntimeException("Invalid month number: " + i);
     }
 }

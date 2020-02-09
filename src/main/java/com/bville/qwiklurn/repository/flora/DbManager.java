@@ -115,7 +115,12 @@ public class DbManager {
                                 elem.append("value", new BsonString(FloraElementWithMedia.getSpecialProperties().get(t)));
                                 return elem;
                             }).collect(Collectors.toList())),
-                            set("season", FloraElementWithMedia.getSeason().getCode()),
+                            set("blossomMonths", FloraElementWithMedia.getBlossomMonths().stream().map((t) -> {
+                                return t;
+                            }).collect(Collectors.toList())),
+                            set("harvestMonths", FloraElementWithMedia.getHarvestMonths().stream().map((t) -> {
+                                return t;
+                            }).collect(Collectors.toList())),
                             set("mediaReferences", FloraElementWithMedia.getMediaReferences()),
                             set("maxHeight", FloraElementWithMedia.getMaxHeight()),
                             set("maxWidth", FloraElementWithMedia.getMaxWidth()),
@@ -379,8 +384,6 @@ public class DbManager {
     }
 
     private IFloraSubType documentToIFloraSubType(Document document) {
-        System.out.println("BVC 2 - " + document.getObjectId("_id").toHexString());
-
         FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
         return FloraSubType.getInstance(document, this);
 

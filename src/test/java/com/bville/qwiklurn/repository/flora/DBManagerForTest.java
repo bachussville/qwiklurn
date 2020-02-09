@@ -7,6 +7,7 @@ package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.Tree;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import org.bson.Document;
 
@@ -63,7 +64,8 @@ public class DBManagerForTest extends DbManager {
         dummy.setWinterLeaves(Boolean.TRUE);
         dummy.setSoilTypes(new ArrayList<>());
         dummy.setSpecialProperties(new EnumMap<>(SpecialsType.class));
-        dummy.setSeason(SeasonType.HERFST);
+        dummy.setBlossomMonths(Arrays.asList(4));
+        dummy.setHarvestMonths(Arrays.asList(8));
 
         return dummy;
     }

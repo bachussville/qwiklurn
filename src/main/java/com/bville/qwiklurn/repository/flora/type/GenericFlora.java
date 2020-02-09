@@ -49,7 +49,7 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
     private List<SoilType> soilTypes;
     private List<SolarType> solarTypes;
     private Map<SpecialsType, String> specialProperties;
-    private SeasonType season;
+    private List<Integer> blossomMonths, harvestMonths;
     private String latinName, commonName, maintenance, color;
     private Integer maxHeight;
     private Integer maxWidth;
@@ -101,9 +101,8 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
                 );
             }
         }
-        if (doc.getString("season") != null) {
-            this.setSeason(SeasonType.parse(doc.getString("season")));
-        }
+        this.blossomMonths = (ArrayList) doc.get("blossomMonths");
+        this.harvestMonths = (ArrayList) doc.get("harvestMonths");
 
         if (doc.getInteger("maxHeight") != null) {
             this.setMaxHeight(doc.getInteger("maxHeight"));
@@ -184,8 +183,15 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
             }).collect(Collectors.toList()));
         }
 
-        if (getSeason() != null) {
-            a.put("season", getSeason().getCode());
+        if (getBlossomMonths() != null) {
+            a.put("blossomMonths", getBlossomMonths().stream().map((t) -> {
+                return String.format("%d",t);
+            }).collect(Collectors.toList()));
+        }
+        if (getHarvestMonths() != null) {
+            a.put("harvestMonths", getHarvestMonths().stream().map((t) -> {
+                return String.format("%d",t);
+            }).collect(Collectors.toList()));
         }
 
         if (getMaxHeight() != null) {
@@ -397,13 +403,23 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
     }
 
     @Override
-    public SeasonType getSeason() {
-        return season;
+    public List<Integer> getBlossomMonths() {
+        return blossomMonths;
     }
 
     @Override
-    public void setSeason(SeasonType season) {
-        this.season = season;
+    public List<Integer> getHarvestMonths() {
+        return harvestMonths;
+    }
+
+    @Override
+    public void setBlossomMonths(List<Integer> months) {
+        blossomMonths = months;
+    }
+
+    @Override
+    public void setHarvestMonths(List<Integer> months) {
+        harvestMonths = months;
     }
 
     @Override
@@ -454,6 +470,8 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
         this.soilTypes = new ArrayList<>();
         this.solarTypes = new ArrayList<>();
         this.specialProperties = new HashMap<>();
+        this.blossomMonths = new ArrayList<>();
+        this.harvestMonths = new ArrayList<>();
 
     }
 
@@ -468,7 +486,8 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
         this.soilTypes = defaultContent.getSoilTypes();
         this.solarTypes = defaultContent.getSolarTypes();
         this.specialProperties = defaultContent.getSpecialProperties();
-        this.season = defaultContent.getSeason();
+        this.blossomMonths = defaultContent.getBlossomMonths();
+        this.harvestMonths = defaultContent.getHarvestMonths();
         this.latinName = defaultContent.getLatinName();
         this.commonName = defaultContent.getCommonName();
         this.maxHeight = defaultContent.getMaxHeight();
