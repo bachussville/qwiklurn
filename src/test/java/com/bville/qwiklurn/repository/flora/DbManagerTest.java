@@ -6,14 +6,10 @@
 package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.type.Tree;
-import com.google.common.collect.Lists;
-import com.mongodb.DBCollection;
-import com.mongodb.client.MongoCollection;
+import com.bville.qwiklurn.repository.flora.type.Loofboom;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
-import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,7 +18,6 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static junit.framework.Assert.assertEquals;
@@ -96,10 +91,10 @@ public class DbManagerTest {
         assertEquals("QwiklurnUnitTest", dbMgr.getDbName());
     }
     
-    private Tree getCompleteTreeClass(boolean forInsert) {
-        Tree newTree = dbMgr.getDummyTree("new");
+    private Loofboom getCompleteTreeClass(boolean forInsert) {
+        Loofboom newTree = dbMgr.getDummyTree("new");
         
-        //SubType for Tree is TREE
+        //SubType for Loofboom is TREE
         //newTree.setSubType(FloraSubTypeEnum.TREE);
         List<FunctionType> fTypes = new ArrayList<>();
         fTypes.add(forInsert ? FunctionType.DECO : FunctionType.BIO);
@@ -136,9 +131,9 @@ public class DbManagerTest {
         return newTree;
     }
 
-    private void validateTree(boolean forInsert, Tree readTreeClass, Tree newTree, Species readSpecies) {
+    private void validateTree(boolean forInsert, Loofboom readTreeClass, Loofboom newTree, Species readSpecies) {
         assertNotNull(readTreeClass.getId().toHexString());
-        assertEquals(FloraSubTypeEnum.TREE, readTreeClass.getSubType());
+        assertEquals(FloraSubTypeEnum.LOOFBOOM, readTreeClass.getSubType());
         assertEquals(forInsert ? FunctionType.DECO : FunctionType.BIO, readTreeClass.getFunctionTypes().get(0));
         assertNotNull(readTreeClass.getSpecies());
         assertEquals(forInsert ? "lName":"anotherLatinName", newTree.getLatinName());
@@ -164,13 +159,13 @@ public class DbManagerTest {
     @Test
     public void saveTreeClass_newWithNewSpecies() {
         dbMgr.clearAllCollections();
-        Tree newTree = getCompleteTreeClass(true);
+        Loofboom newTree = getCompleteTreeClass(true);
         assertNull(newTree.getId());
         assertNull(newTree.getSpecies().getId());
 
         dbMgr.saveFlora(newTree);
 
-        Tree readTreeClass = (Tree) dbMgr.getFloraById(newTree.getId());
+        Loofboom readTreeClass = (Loofboom) dbMgr.getFloraById(newTree.getId());
         Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
 
         
@@ -188,7 +183,7 @@ public class DbManagerTest {
         dbMgr.saveSpecies(new Species("species"));
         Document dbSpecies = (Document)dbMgr.getSpeciesCollection().find().first();
         
-        Tree newTree = getCompleteTreeClass(true);
+        Loofboom newTree = getCompleteTreeClass(true);
         newTree.setSpecies(dbMgr.getSpeciesById(dbSpecies.getObjectId("_id")));
         
         assertNull(newTree.getId());
@@ -196,7 +191,7 @@ public class DbManagerTest {
         
         dbMgr.saveFlora(newTree);
 
-        Tree readTreeClass = (Tree) dbMgr.getFloraById(newTree.getId());
+        Loofboom readTreeClass = (Loofboom) dbMgr.getFloraById(newTree.getId());
         Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
 
         validateTree(true, readTreeClass, newTree, readSpecies);
@@ -208,18 +203,18 @@ public class DbManagerTest {
     @Test
     public void saveTreeClass_existingWithNewSpecies() {
         dbMgr.clearAllCollections();
-        Tree oldTree = getCompleteTreeClass(true);
+        Loofboom oldTree = getCompleteTreeClass(true);
         assertNull(oldTree.getId());
         assertNull(oldTree.getSpecies().getId());
         dbMgr.saveFlora(oldTree);
         ObjectId dbTreeId = ((Document)dbMgr.getFloraCollection().find().first()).getObjectId("_id");
         
-        Tree updatedTree = getCompleteTreeClass(false);
+        Loofboom updatedTree = getCompleteTreeClass(false);
         updatedTree.setId(new ObjectId(dbTreeId.toHexString()));
         
         dbMgr.saveFlora(updatedTree);
         
-        Tree readTreeClass = (Tree) dbMgr.getFloraById(updatedTree.getId());
+        Loofboom readTreeClass = (Loofboom) dbMgr.getFloraById(updatedTree.getId());
         Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
 
         
@@ -233,7 +228,7 @@ public class DbManagerTest {
         dbMgr.saveSpecies(new Species("species"));
         Document dbSpecies = (Document)dbMgr.getSpeciesCollection().find().first();
         
-        Tree oldTree = getCompleteTreeClass(true);
+        Loofboom oldTree = getCompleteTreeClass(true);
         oldTree.setSpecies(dbMgr.getSpeciesById(dbSpecies.getObjectId("_id")));
         
         assertNull(oldTree.getId());
@@ -242,13 +237,13 @@ public class DbManagerTest {
         dbMgr.saveFlora(oldTree);
         ObjectId dbTreeId = ((Document)dbMgr.getFloraCollection().find().first()).getObjectId("_id");
         
-        Tree updatedTree = getCompleteTreeClass(false);
+        Loofboom updatedTree = getCompleteTreeClass(false);
         updatedTree.setSpecies(dbMgr.getSpeciesById(dbSpecies.getObjectId("_id")));
         updatedTree.setId(new ObjectId(dbTreeId.toHexString()));
         
         dbMgr.saveFlora(updatedTree);
         
-        Tree readTreeClass = (Tree) dbMgr.getFloraById(updatedTree.getId());
+        Loofboom readTreeClass = (Loofboom) dbMgr.getFloraById(updatedTree.getId());
         Species readSpecies = dbMgr.getSpeciesById(readTreeClass.getSpecies().getId());
 
         

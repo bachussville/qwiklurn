@@ -5,7 +5,7 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
-import com.bville.qwiklurn.repository.flora.type.Tree;
+import com.bville.qwiklurn.repository.flora.type.Loofboom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -43,15 +43,15 @@ public class DBManagerForTest extends DbManager {
 
     }
 
-    public Document persistTreeClass(Tree tree) {
+    public Document persistTreeClass(Loofboom tree) {
         Document treeAsDoc = tree.toBson();
         getFloraCollection().insertOne(treeAsDoc);
         return treeAsDoc;
     }
 
-    public Tree getDummyTree(String latinName) {
-        Tree dummy = new Tree();
-        dummy.setSubType(FloraSubTypeEnum.TREE);
+    public Loofboom getDummyTree(String latinName) {
+        Loofboom dummy = new Loofboom();
+        dummy.setSubType(FloraSubTypeEnum.LOOFBOOM);
         dummy.setFunctionTypes(new ArrayList<>());
         dummy.setSpecies(new Species("someSpecie"));
         dummy.setLatinName(latinName);

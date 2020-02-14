@@ -20,7 +20,7 @@ import org.bson.Document;
  *
  * @author Bart
  */
-public class Bush extends GenericFlora implements IFloraSubType {
+public class Heester extends VastePlant implements IFloraSubType {
 
     private Boolean hedgeable = null;
 
@@ -36,11 +36,12 @@ public class Bush extends GenericFlora implements IFloraSubType {
 
     @Override
     public FloraSubTypeEnum getSubType() {
-        return FloraSubTypeEnum.BUSH;
+        return FloraSubTypeEnum.HEESTER;
     }
 
     @Override
     public void setSubTypeAttributes(Document doc) {
+        super.setSubTypeAttributes(doc);
         if (doc.getBoolean("hedgeable") != null) {
             setHedgeable(doc.getBoolean("hedgeable"));
         }
@@ -48,10 +49,10 @@ public class Bush extends GenericFlora implements IFloraSubType {
 
     @Override
     public void setSubTypeAttributes(IFloraSubType source) {
-        if(source == null){
+        if (source == null) {
             return;
         }
-        setHedgeable(((Bush) source).getHedgeable());
+        setHedgeable(((Heester) source).getHedgeable());
     }
 
     @Override
@@ -72,6 +73,10 @@ public class Bush extends GenericFlora implements IFloraSubType {
         PropertyLabel hedgeableLabel = new PropertyLabel("Toepasbaar als haag");
         hedgeableComboBox = new OptionalBooleanJCombobox();
         hedgeableComboBox.setEditable(false);
+
+        if (panel.getComponents().length > 0) {
+            c.gridy += panel.getComponents()[panel.getComponents().length].getY();
+        }
 
         panel.add(hedgeableLabel, c);
         c.gridx++;

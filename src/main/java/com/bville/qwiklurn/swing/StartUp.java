@@ -7,7 +7,7 @@ package com.bville.qwiklurn.swing;
 
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.type.Tree;
+import com.bville.qwiklurn.repository.flora.type.Loofboom;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -46,7 +46,7 @@ public class StartUp extends JFrame {
                 try {
                     Detail d = new Detail(dbMgr, "Add new Flora", ActionType.ADD_NEW, null);
                     List<IFloraSubType> dataList = new ArrayList<>();
-                    dataList.add(new Tree());
+                    dataList.add(new Loofboom());
                     d.setDataList(dataList);
                     d.refreshDataList(0, null, true);
                     d.setVisible(true);

@@ -7,7 +7,7 @@ package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
-import com.bville.qwiklurn.repository.flora.type.GenericFlora;
+import com.bville.qwiklurn.repository.flora.type.AbstractFlora;
 import com.github.mongobee.Mongobee;
 import com.github.mongobee.exception.MongobeeException;
 import com.mongodb.MongoWriteException;
@@ -88,7 +88,7 @@ public class DbManager {
     }
 
     public void saveFlora(IFloraSubType element) {
-        final GenericFlora FloraElementWithMedia = (GenericFlora) uploadNewFiles(element);
+        final AbstractFlora FloraElementWithMedia = (AbstractFlora) uploadNewFiles(element);
 
         if (FloraElementWithMedia.getId() != null) {
             Species currentSpecies = getFloraById(FloraElementWithMedia.getId()).getSpecies();
@@ -176,7 +176,7 @@ public class DbManager {
 
     }
 
-    private ObjectId updateSpeciesForFlora(GenericFlora floraElement, Species currentSpecies, Species newSpecies) {
+    private ObjectId updateSpeciesForFlora(AbstractFlora floraElement, Species currentSpecies, Species newSpecies) {
         if (currentSpecies != null) {
             currentSpecies.getMembers().removeIf(m -> {
                 return m.compareTo(floraElement.getId()) == 0;

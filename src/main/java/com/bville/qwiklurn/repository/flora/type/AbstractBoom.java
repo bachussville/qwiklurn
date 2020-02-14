@@ -6,7 +6,6 @@
 package com.bville.qwiklurn.repository.flora.type;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
 import com.bville.qwiklurn.repository.flora.LeafageEnum;
 import com.bville.qwiklurn.repository.flora.TreeShapeEnum;
 import com.bville.qwiklurn.swing.DefaultGridBagConstraints;
@@ -23,7 +22,7 @@ import org.bson.Document;
  *
  * @author Bart
  */
-public class Tree extends GenericFlora implements IFloraSubType {
+abstract class AbstractBoom extends AbstractFlora implements IFloraSubType {
 
     private LeafageEnum leafage = null;
     private TreeShapeEnum treeShape = null;
@@ -31,12 +30,11 @@ public class Tree extends GenericFlora implements IFloraSubType {
     private JComboBox<LeafageEnum> leafageComboBox;
     private JComboBox<TreeShapeEnum> treeShapeComboBox;
 
-    public Tree() {
+    protected AbstractBoom(Boolean defaultWinterLeaves) {
+        super(defaultWinterLeaves);
         this.leafageComboBox = new JComboBox<>();
         this.treeShapeComboBox = new JComboBox<>();
     }
-
-
 
     public LeafageEnum getLeafage() {
         return leafage;
@@ -117,9 +115,9 @@ public class Tree extends GenericFlora implements IFloraSubType {
             return;
         }
         
-        if (source instanceof Tree) {
-            leafage = ((Tree) source).getLeafage();
-            treeShape = ((Tree) source).getTreeShape();
+        if (source instanceof AbstractBoom) {
+            leafage = ((AbstractBoom) source).getLeafage();
+            treeShape = ((AbstractBoom) source).getTreeShape();
         }
 
     }
@@ -179,11 +177,6 @@ public class Tree extends GenericFlora implements IFloraSubType {
         if (treeShapeComboBox != null) {
             treeShapeComboBox.setBackground(Color.WHITE);
         }        
-    }
-
-    @Override
-    public FloraSubTypeEnum getSubType() {
-        return FloraSubTypeEnum.TREE;
     }
 
     

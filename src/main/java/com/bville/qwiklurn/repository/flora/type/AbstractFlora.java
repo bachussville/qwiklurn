@@ -35,7 +35,7 @@ import org.bson.types.ObjectId;
  *
  * @author Bart
  */
-public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
+public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora> {
 
     static final Color COLOR_VALIDATION_FAILED = Color.YELLOW;
     static final Color COLOR_VALIDATION_SUCCES = Color.WHITE;
@@ -57,6 +57,18 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
     private Date modificationDate;
     private Date interrogationDate;
 
+    public AbstractFlora(Boolean winterLeaves) {
+        this.winterLeaves = winterLeaves;
+        this.mediaReferences = new ArrayList<>();
+        this.functionTypes = new ArrayList<>();
+        this.soilTypes = new ArrayList<>();
+        this.solarTypes = new ArrayList<>();
+        this.specialProperties = new HashMap<>();
+        this.blossomMonths = new ArrayList<>();
+        this.harvestMonths = new ArrayList<>();
+    }
+
+    
     public void setAttributes(Document doc, DbManager dbMgr) {
         this.setId(doc.getObjectId("_id"));
         this.setSubType(FloraSubTypeEnum.parse(doc.get("subType", String.class)));
@@ -462,7 +474,7 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
         this.interrogationDate = interrogationDate;
     }
 
-    public GenericFlora() {
+    public AbstractFlora() {
         this.subType = getSubType();
 
         this.mediaReferences = new ArrayList<>();
@@ -504,7 +516,7 @@ public abstract class GenericFlora implements IFlora, Comparable<GenericFlora> {
     }
 
     @Override
-    public int compareTo(GenericFlora o) {
+    public int compareTo(AbstractFlora o) {
         if (o == null) {
             return 1;
         }
