@@ -20,7 +20,7 @@ import org.bson.Document;
  *
  * @author Bart
  */
-public class Heester extends VastePlant implements IFloraSubType {
+public class Heester extends AbstractVastePlant implements IFloraSubType {
 
     private Boolean hedgeable = null;
 

@@ -196,14 +196,10 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
         }
 
         if (getBlossomMonths() != null) {
-            a.put("blossomMonths", getBlossomMonths().stream().map((t) -> {
-                return String.format("%d",t);
-            }).collect(Collectors.toList()));
+            a.put("blossomMonths", getBlossomMonths());
         }
         if (getHarvestMonths() != null) {
-            a.put("harvestMonths", getHarvestMonths().stream().map((t) -> {
-                return String.format("%d",t);
-            }).collect(Collectors.toList()));
+            a.put("harvestMonths", getHarvestMonths());
         }
 
         if (getMaxHeight() != null) {

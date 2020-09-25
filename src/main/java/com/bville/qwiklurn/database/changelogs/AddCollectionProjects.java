@@ -20,44 +20,14 @@ import org.bson.Document;
  * @author Bart
  */
 @ChangeLog(order = "001")
-public class SetupDbase {
+public class AddCollectionProjects {
 
-    private static final String COLLECTION_PROJECTS = "Projects";
-    
     private DBCollection getProjectsCollection(DB db){
         return db.getCollection(COLLECTION_PROJECTS);
     }
-    
-    private DBCollection getFloraCollection(DB db){
-        return db.getCollection("Flora");
-    }
+    private static final String COLLECTION_PROJECTS = "Projects";
     
     @ChangeSet(order = "001", id = "changeId#1", author = "mongoBee")
-    public void addCollectionFlora(DB db) {
-        DBCollection flora = db.createCollection("Flora", null);
-        DBObject idxDef = new BasicDBObject();
-        idxDef.put("latinName", Integer.parseInt("1"));
-        DBObject idxOptions = new BasicDBObject();
-        idxOptions.put("name", "latinName_Unq");
-        idxOptions.put("unique", true);
-        flora.createIndex(idxDef, idxOptions);
-    }
-    
-    @ChangeSet(order = "002", id = "changeId#2", author = "mongoBee")
-    public void addCollectionSpecies(DB db) {
-        DBCollection flora = db.createCollection("Species", null);
-        DBObject idxDef = new BasicDBObject();
-        idxDef.put("name", Integer.parseInt("1"));
-        DBObject idxOptions = new BasicDBObject();
-        idxOptions.put("name", "name_Unq");
-        idxOptions.put("unique", true);
-        flora.createIndex(idxDef, idxOptions);
-        
-    }
-    
-
-    
-    @ChangeSet(order = "003", id = "changeId#3", author = "mongoBee")
     public void addCollectionProjects(DB db) {
         DBCollection flora = db.createCollection(COLLECTION_PROJECTS, null);
         DBObject idxDef = new BasicDBObject();
@@ -66,7 +36,8 @@ public class SetupDbase {
         idxOptions.put("name", "name_Unq");
         idxOptions.put("unique", true);
         flora.createIndex(idxDef, idxOptions);
-    }    
+    }
+    
     
     
 }

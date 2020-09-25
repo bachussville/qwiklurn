@@ -12,6 +12,8 @@ import com.bville.qwiklurn.repository.flora.SolarType;
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.FunctionType;
 import com.bville.qwiklurn.repository.flora.OptionalBooleanJCombobox;
+import com.bville.qwiklurn.repository.flora.Project;
+import com.bville.qwiklurn.repository.flora.ProjectMember;
 import com.bville.qwiklurn.repository.flora.SpecialsType;
 import com.bville.qwiklurn.repository.flora.Species;
 import com.bville.qwiklurn.repository.flora.TreePruneEnum;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +44,7 @@ import java.util.stream.Collectors;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
+import static javax.swing.JOptionPane.QUESTION_MESSAGE;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -61,6 +65,7 @@ public class Detail extends JFrame {
     private ImagePanel image;
     private JComboBox<FloraSubTypeEnum> FloraSubTypeList;
     private JComboBox<Species> speciesCombo;
+    private JComboBox<Project> projectCombo;
     private OptionalBooleanJCombobox winterLeafCombo;
     private ImmutableTableModel specialPropsModel;
     private JTable specialProps;
@@ -84,7 +89,7 @@ public class Detail extends JFrame {
     private int listIdx = 0;
     private int activeMediaIdx = -1;
     private int maxMediaIdx = 0;
-
+    
     List<IFloraSubType> dataList;
 
     public Detail(DbManager dbM, String title, ActionType actionT, InterrogationSetup iSetup) throws HeadlessException, IOException {
@@ -226,25 +231,42 @@ public class Detail extends JFrame {
                 floraElement.setMaintenance(maintenanceJTextArea.getText().trim().length() > 0 ? maintenanceJTextArea.getText().trim() : null);
 
                 dbMgr.saveFlora(floraElement);
+
+                Project selProject = (Project) projectCombo.getSelectedItem();
+                if (selProject == null) {
+                    return;
+                } 
+                
+                List<Project> projects = dbMgr.listProjectsFor(floraElement);
+                if (projects.size() == 0
+                        || projects.stream().noneMatch(p->Objects.equals(p.getId(), selProject.getId()))){
+                    dbMgr.saveProject(selProject);
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
                 throw new RuntimeException(ex);
             }
-        });
+        }
+        );
         saveButton.setVisible(actionType.allowsElementUpdate());
 
         validateButton = new JButton("Validate");
-        validateButton.addActionListener((ActionEvent e) -> {
-            try {
-                validateFloraElement();
-            } catch (Exception exc) {
-                new RuntimeException(exc);
-            }
-        });
+
+        validateButton.addActionListener(
+                (ActionEvent e) -> {
+                    try {
+                        validateFloraElement();
+                    } catch (Exception exc) {
+                        new RuntimeException(exc);
+                    }
+                }
+        );
         validateButton.setVisible(actionType.allowsElementIntgerrogation());
 
         panel.add(newButton);
+
         panel.add(saveButton);
+
         panel.add(validateButton);
 
         return panel;
@@ -390,8 +412,8 @@ public class Detail extends JFrame {
 
         PropertyLabel speciesLabel = new PropertyLabel("Soortnaam");
         speciesCombo = new JComboBox<>();
-        JButton addSpeciesButton = new JButton("+");
-        addSpeciesButton.setPreferredSize(new Dimension(30, 25));
+        JButton addSpeciesButton = new JButton("New..");
+        addSpeciesButton.setPreferredSize(new Dimension(80, 25));
         addSpeciesButton.addActionListener((e) -> {
             String name = JOptionPane.showInputDialog(meReference, "Welke naam ?");
             Species newS = new Species(null, name, new ArrayList<ObjectId>());
@@ -403,6 +425,44 @@ public class Detail extends JFrame {
         speciesPanel.setLayout(new GridBagLayout());
         speciesPanel.add(speciesCombo);//, new DefaultGridBagConstraints());
         speciesPanel.add(addSpeciesButton);
+
+        PropertyLabel projectsLabel = new PropertyLabel("In project(en)");
+        projectCombo = new JComboBox<>();
+
+        JButton newProject = new JButton("New..");
+        newProject.setPreferredSize(new Dimension(80, 25));
+        newProject.addActionListener((e) -> {
+            String name = JOptionPane.showInputDialog(meReference, "Welke naam ?");
+            Project newP = new Project(name);
+            newP.addMember(new ProjectMember(floraElement));
+            //dbMgr.saveProject(newP);
+            projectCombo.addItem(newP);
+            projectCombo.setSelectedItem(newP);
+        });
+
+        JButton addToProject = new JButton("Link to project..");
+        addToProject.setPreferredSize(new Dimension(140, 25));
+        addToProject.addActionListener((e) -> {
+
+            List<Project> projects = dbMgr.listProjects();
+            if (projects.size() == 0) {
+                JOptionPane.showMessageDialog(null, "Geen projecten gevonden");
+            } else {
+                Project selectedProject = (Project) JOptionPane.showInputDialog(meReference, "Welke project ?", "Kies maar", QUESTION_MESSAGE, null, projects.toArray(), projects.get(0));
+                if (selectedProject != null) {
+                    selectedProject.addMember(new ProjectMember(floraElement));
+                    //dbMgr.saveProject(selectedProject);
+                    projectCombo.addItem(selectedProject);
+                    projectCombo.setSelectedItem(selectedProject);
+                }
+            }
+        });
+
+        JPanel projectsPanel = new JPanel();
+        projectsPanel.setLayout(new GridBagLayout());
+        projectsPanel.add(projectCombo);//, new DefaultGridBagConstraints());
+        projectsPanel.add(newProject);
+        projectsPanel.add(addToProject);
 
         PropertyLabel latinNameLabel = new PropertyLabel("Latijnse naam");
         latinNameText = new JTextField();
@@ -539,6 +599,12 @@ public class Detail extends JFrame {
         panel.add(speciesLabel, c);
         c.gridx++;
         panel.add(speciesPanel, c);
+
+        c.gridx = 0;
+        c.gridy++;
+        panel.add(projectsLabel, c);
+        c.gridx++;
+        panel.add(projectsPanel, c);
 
         c.gridx = 0;
         c.gridy++;
@@ -711,6 +777,16 @@ public class Detail extends JFrame {
                 speciesCombo.setSelectedItem(s);
             }
         });
+
+        projectCombo.removeAllItems();
+        List<Project> projList = dbMgr.listProjectsFor(floraElement);
+        projList.forEach(s -> {
+            projectCombo.addItem(s);
+        });
+
+        if (projList != null && projList.size() > 0) {
+            projectCombo.setSelectedItem(projList.get(0));
+        }
 
         commonNameText.setText(floraElement == null ? "" : floraElement.getCommonName());
 
@@ -1088,20 +1164,32 @@ public class Detail extends JFrame {
 
     private String getMonthName(int i) {
         switch (i) {
-            case 1: return "jan";
-            case 2: return "feb";
-            case 3: return "maa";
-            case 4: return "apr";
-            case 5: return "mei";
-            case 6: return "jun";
-            case 7: return "jul";
-            case 8: return "aug";
-            case 9: return "sep";
-            case 10: return "okt";
-            case 11: return "nov";
-            case 12: return "dec";
+            case 1:
+                return "jan";
+            case 2:
+                return "feb";
+            case 3:
+                return "maa";
+            case 4:
+                return "apr";
+            case 5:
+                return "mei";
+            case 6:
+                return "jun";
+            case 7:
+                return "jul";
+            case 8:
+                return "aug";
+            case 9:
+                return "sep";
+            case 10:
+                return "okt";
+            case 11:
+                return "nov";
+            case 12:
+                return "dec";
         };
-        
+
         throw new RuntimeException("Invalid month number: " + i);
     }
 }

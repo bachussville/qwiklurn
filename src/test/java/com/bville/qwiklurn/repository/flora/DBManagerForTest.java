@@ -30,6 +30,7 @@ public class DBManagerForTest extends DbManager {
     public void clearAllCollections() {
         clearCollection(DbManager.COLL_FLORA);
         clearCollection(DbManager.COLL_SPECIES);
+        clearCollection(DbManager.COLL_PROJECTS);
         clearCollection(DbManager.COLL_FLORA + "Meda.chunks");
         clearCollection(DbManager.COLL_FLORA + "Media.files");
     }
@@ -72,6 +73,11 @@ public class DBManagerForTest extends DbManager {
 
     public Species getDummySpecies(String latinName) {
         Species dummy = new Species(latinName);
+        return dummy;
+    }
+
+    public Project getDummyProject(String name) {
+        Project dummy = new Project(name);
         return dummy;
     }
 }

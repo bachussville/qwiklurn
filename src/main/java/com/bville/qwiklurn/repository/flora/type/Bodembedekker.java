@@ -22,7 +22,7 @@ import org.bson.Document;
  *
  * @author Bart
  */
-public class Bodembedekker extends VastePlant implements IFloraSubType {
+public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
 
     private Boolean zelfVullend;
     private OptionalBooleanJCombobox zelfVullendComboBox;

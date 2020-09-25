@@ -62,6 +62,20 @@ public class DBScriptsTest {
             assertEquals(11000, e.getCode());
             assertTrue("Wrong duplicate key", e.getMessage().indexOf("name_Unq") > 0);
         }
-
     }
+    
+    @Test
+    public void uniqueIndexForProjectsIsActive() {
+        MongoCollection f = dbMgr.getProjectCollection();
+        Document doc = dbMgr.getDummyProject("p").toBson();
+        Document doc2 = dbMgr.getDummySpecies("p").toBson();
+        f.insertOne(doc);
+        try {
+            f.insertOne(doc2);
+            fail("Duplicate shouldn't be inserted");
+        } catch (MongoException e) {
+            assertEquals(11000, e.getCode());
+            assertTrue("Wrong duplicate key", e.getMessage().indexOf("name_Unq") > 0);
+        }
+    }    
 }

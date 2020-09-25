@@ -21,7 +21,7 @@ import org.bson.Document;
  *
  * @author Bart
  */
-public class Klimplant extends VastePlant implements IFloraSubType {
+public class Klimplant extends AbstractVastePlant implements IFloraSubType {
 
     private Boolean requiresSupport;
     private OptionalBooleanJCombobox requiresSupportComboBox;
@@ -80,7 +80,7 @@ public class Klimplant extends VastePlant implements IFloraSubType {
         requiresSupportComboBox.setEditable(false);
 
         if(panel.getComponents().length > 0){
-            c.gridy+= panel.getComponents()[panel.getComponents().length].getY();            
+            c.gridy+= panel.getComponents()[panel.getComponents().length -1].getY()+1;            
         }
                 
         panel.add(requiresSupportLabel, c);

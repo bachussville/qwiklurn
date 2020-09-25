@@ -22,12 +22,15 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import static com.mongodb.client.model.Filters.*;
+import com.mongodb.client.model.Projections;
+import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Updates.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,6 +41,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 /**
@@ -56,6 +60,7 @@ public class DbManager {
     private String dbName = "Qwiklurn";
     public static final String COLL_FLORA = "Flora";
     public static final String COLL_SPECIES = "Species";
+    public static final String COLL_PROJECTS = "Projects";
 
     public DbManager(String databaseName) {
         if (databaseName != null) {
@@ -214,6 +219,23 @@ public class DbManager {
 
     }
 
+    public void saveProject(Project project) {
+        Project current = getProjectById(project.getId());
+        if (current != null) {
+            getProjectCollection().updateOne(eq("_id", project.getId()),
+                    combine(
+                            set("name", project.getName()),
+                            set("members", project.getMembers().stream().map(ProjectMember::toBson).collect(Collectors.toList()))
+                    ));
+        } else {
+            project.setCreationStamp(Instant.now().getEpochSecond());
+            Document specDoc = project.toBson();
+            getProjectCollection().insertOne(specDoc);
+            project.setId(specDoc.getObjectId("_id"));
+        }
+
+    }
+
     public void updateFloraValidationDate(IFloraSubType FloraElement) throws FileNotFoundException {
         if (FloraElement.getId() != null) {
             getFloraCollection().updateOne(eq("_id", new ObjectId(FloraElement.getId().toHexString())),
@@ -230,6 +252,10 @@ public class DbManager {
 
     public MongoCollection getSpeciesCollection() {
         return connect().getCollection(COLL_SPECIES);
+    }
+
+    public MongoCollection getProjectCollection() {
+        return connect().getCollection(COLL_PROJECTS);
     }
 
     public IFloraSubType getFloraById(ObjectId id) {
@@ -262,6 +288,50 @@ public class DbManager {
         List<Species> result = new ArrayList();
         a.forEachRemaining(d -> {
             result.add(Species.fromBson((Document) d));
+        });
+
+        return result;
+
+    }
+
+    public Project getProjectById(ObjectId projectId) {
+        if (projectId == null) {
+            return null;
+        }
+        FindIterable a = getProjectCollection().find(eq("_id", new ObjectId(projectId.toHexString())));
+        if (a.first() != null) {
+            Document specDoc = (Document) a.first();
+            return Project.fromBson(specDoc);
+        } else {
+            return null;
+        }
+
+    }
+
+    public List<Project> listProjects() {
+        Document sortCrit = new Document();
+        sortCrit.append("creationStamp", -1);
+
+        MongoCursor a = getProjectCollection().find().sort(sortCrit).iterator();
+
+        List<Project> result = new ArrayList();
+        a.forEachRemaining(d -> {
+            result.add(Project.fromBson((Document) d));
+        });
+
+        return result;
+    }
+
+    public List<Project> listProjectsFor(IFloraSubType faunaElementId) {
+        Document sortCrit = new Document();
+        sortCrit.append("creationStamp", -1);
+
+        MongoCursor a = getProjectCollection().find(elemMatch("members", eq("memberId", faunaElementId.getId()))).sort(sortCrit).iterator();
+
+        List<Project> result = new ArrayList();
+        
+        a.forEachRemaining(d -> {
+            result.add(Project.fromBson((Document) d));
         });
 
         return result;
@@ -340,7 +410,9 @@ public class DbManager {
         }
 
         for (int i = 0; i < FloraElement.getMediaReferences().size(); i++) {
-            if (FloraElement.getMediaReferences().get(i) instanceof File) {
+            if (FloraElement.getMediaReferences().get(i) instanceof Document){
+                //Unchanged media reference
+            }else if (FloraElement.getMediaReferences().get(i) instanceof File) {
                 ObjectId createdId;
                 if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(filepath_No_Pic)) {
                     createdId = new ObjectId(dummyFileId);
