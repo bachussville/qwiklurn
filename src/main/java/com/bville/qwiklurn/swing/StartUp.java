@@ -5,9 +5,11 @@
  */
 package com.bville.qwiklurn.swing;
 
+import com.bville.qwiklurn.RuntimeManager;
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.Loofboom;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -26,20 +28,27 @@ import javax.swing.JFrame;
  */
 public class StartUp extends JFrame {
 
-    private final DbManager dbMgr; 
+    private Color backgroundColor = Color.ORANGE;
+    private Color fontColor = Color.BLUE;
+    private Color foregroundColor = Color.gray;
+
+    private final DbManager dbMgr;
     private final StartUp meReference;
 
-    public StartUp(DbManager dbM) throws HeadlessException {
-        dbMgr = dbM;
+    public StartUp() throws HeadlessException {
+        dbMgr = RuntimeManager.dbMgr;
         meReference = this;
         init();
     }
 
     private void init() {
 
+        
         setTitle("Choose your mood");
         setLayout(new FlowLayout());
+
         JButton addNew = new JButton("Add new Flora");
+        RuntimeManager.applyColors(addNew);
         addNew.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -59,6 +68,7 @@ public class StartUp extends JFrame {
         });
 
         JButton study = new JButton("Study..");
+        RuntimeManager.applyColors(study);
         study.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -73,6 +83,8 @@ public class StartUp extends JFrame {
         });
 
         JButton interrogate = new JButton("Test..");
+        RuntimeManager.applyColors(interrogate);
+
         interrogate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -96,7 +108,7 @@ public class StartUp extends JFrame {
 
     void interrogationSetupComplete(InterrogationSetup iSetup) {
         try {
-            StudyList d = new StudyList(dbMgr,ActionType.INTERROGATION, iSetup);
+            StudyList d = new StudyList(dbMgr, ActionType.INTERROGATION, iSetup);
             d.alertDefaultQueryActivated();
             d.setVisible(true);
         } catch (HeadlessException ex) {

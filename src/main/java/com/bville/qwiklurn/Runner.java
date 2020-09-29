@@ -20,11 +20,15 @@ import javax.swing.JOptionPane;
 public class Runner {
 
     public static void main(String[] args) throws IOException {
+        RuntimeManager.setupFor(RuntimeManager.Environment.DEV);
+        //RuntimeManager.setupFor(RuntimeManager.Environment.PROD);
         new Runner().run();
     }
 
     private void run() throws HeadlessException, IOException {
-        new StartUp(new DbManager(null)).setVisible(true);
+
+        new StartUp().setVisible(true);
+
         /*
         db = new DbManager();
 
@@ -39,8 +43,7 @@ public class Runner {
         }
 
         detailScreen.setVisible(true);
-*/
-
+         */
     }
 
 }
