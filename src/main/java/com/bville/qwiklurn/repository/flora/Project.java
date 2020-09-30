@@ -5,7 +5,6 @@
  */
 package com.bville.qwiklurn.repository.flora;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +19,7 @@ public class Project {
 
     private ObjectId id;
     private String name;
-    private List<ProjectMember> members;
+    private List<ProjectElement> members;
     private Long creationStamp;
 
     public Project(String name) {
@@ -28,7 +27,7 @@ public class Project {
         this.members = new ArrayList<>();
     }
 
-    public Project(ObjectId id, String name, List<ProjectMember> members, Long creationStamp) {
+    public Project(ObjectId id, String name, List<ProjectElement> members, Long creationStamp) {
         this.id = id;
         this.name = name;
         this.members = members;
@@ -51,11 +50,11 @@ public class Project {
         this.name = name;
     }
 
-    public List<ProjectMember> getMembers() {
+    public List<ProjectElement> getMembers() {
         return members;
     }
 
-    public void setMembers(List<ProjectMember> members) {
+    public void setMembers(List<ProjectElement> members) {
         this.members = members;
     }
 
@@ -76,7 +75,7 @@ public class Project {
 
         doc.put("name", getName());
 
-        doc.put("members", getMembers().stream().map(ProjectMember::toBson).collect(Collectors.toList()));
+        doc.put("members", getMembers().stream().map(ProjectElement::toBson).collect(Collectors.toList()));
         doc.put("creationStamp", getCreationStamp());
 
         return doc;
@@ -90,7 +89,7 @@ public class Project {
         
         return new Project(doc.getObjectId("_id"),
                 doc.getString("name"),
-                members.stream().map(ProjectMember::fromBson).collect(Collectors.toList()),
+                members.stream().map(ProjectElement::fromBson).collect(Collectors.toList()),
                 doc.getLong("creationStamp")
         );
     }
@@ -100,9 +99,9 @@ public class Project {
         return name;
     }
 
-    public boolean addMember(ProjectMember projectMember) {
-        if(members.stream().noneMatch(m -> {return m.getMemberId() == projectMember.getMemberId();})){
-            members.add(projectMember);
+    public boolean addMember(ProjectElement projectElement) {
+        if(members.stream().noneMatch(m -> {return m.getElementId() == projectElement.getElementId();})){
+            members.add(projectElement);
             return true;
         }
         return false;

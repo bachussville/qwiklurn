@@ -24,7 +24,11 @@ public class RuntimeManager {
     public static enum Environment {
         TEST,
         DEV,
-        PROD
+        PROD;
+
+        public static Environment parse(String arg) {
+            return Environment.valueOf(arg);
+        }
     }
 
     private static Color backgroundColor = Color.MAGENTA;
@@ -33,7 +37,7 @@ public class RuntimeManager {
     private static Color activeCaptionText = Color.GREEN;
 
     public static void setDevColors(Environment e) {
-        if (e == Environment.PROD) {
+        if (e != Environment.PROD) {
             backgroundColor = Color.BLACK;
             foregroundColor = Color.RED;
         } else {

@@ -8,18 +8,15 @@ package com.bville.qwiklurn.swing;
 import com.bville.qwiklurn.repository.flora.CodeDescrEnum;
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.SoilType;
-import com.bville.qwiklurn.repository.flora.SolarType;
+import com.bville.qwiklurn.repository.flora.BodemEigenschapEnum;
+import com.bville.qwiklurn.repository.flora.ZonlichtEnum;
 import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.StringTokenizer;
-import javax.lang.model.util.Elements;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,8 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.table.TableModel;
+
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 
@@ -60,8 +56,8 @@ public class Criteriator extends JFrame {
 
     public enum CriteriumAttribute {
         LATIN("Latijnse name", "latinName", String.class),
-        SOIL("Grondeigenschap", "soilTypes", SoilType.class),
-        SOLAR("Belichting", "solarTypes", SolarType.class);
+        SOIL("Grondeigenschap", "soilTypes", BodemEigenschapEnum.class),
+        SOLAR("Belichting", "solarTypes", ZonlichtEnum.class);
 
         public String name;
         public String attr;
@@ -79,11 +75,11 @@ public class Criteriator extends JFrame {
         }
 
         Object[] getArrayOfAllowedInputValues() {
-            if (valueType == SoilType.class) {
-                return SoilType.values();
+            if (valueType == BodemEigenschapEnum.class) {
+                return BodemEigenschapEnum.values();
             }
-            if (valueType == SolarType.class) {
-                return SolarType.values();
+            if (valueType == ZonlichtEnum.class) {
+                return ZonlichtEnum.values();
             }
 
             return null;
@@ -423,12 +419,12 @@ public class Criteriator extends JFrame {
             return (String) selectedVal;
         }
 
-        if (selectedVal instanceof SoilType) {
-            return ((SoilType) selectedVal).getCode();
+        if (selectedVal instanceof BodemEigenschapEnum) {
+            return ((BodemEigenschapEnum) selectedVal).getCode();
         }
 
-        if (selectedVal instanceof SolarType) {
-            return ((SolarType) selectedVal).getCode();
+        if (selectedVal instanceof ZonlichtEnum) {
+            return ((ZonlichtEnum) selectedVal).getCode();
         }
 
         throw new RuntimeException("Unable to determine the database value vor class " + selectedVal.getClass().getName()); //To change body of generated methods, choose Tools | Templates.

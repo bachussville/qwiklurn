@@ -24,23 +24,23 @@ import org.bson.Document;
  */
 public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
 
-    private Boolean zelfVullend;
-    private OptionalBooleanJCombobox zelfVullendComboBox;
+    private Boolean uitlopend;
+    private OptionalBooleanJCombobox uitlopendComboBox;
 
-    public Boolean getZelfVullend() {
-        return zelfVullend;
+    public Boolean getuitlopend() {
+        return uitlopend;
     }
 
-    public void setZelfVullend(Boolean zelfVullend) {
-        this.zelfVullend = zelfVullend;
+    public void setuitlopend(Boolean uitlopend) {
+        this.uitlopend = uitlopend;
     }
 
-    public OptionalBooleanJCombobox getZelfVullendComboBox() {
-        return zelfVullendComboBox;
+    public OptionalBooleanJCombobox getuitlopendComboBox() {
+        return uitlopendComboBox;
     }
 
-    public void setZelfVullendComboBox(OptionalBooleanJCombobox zelfVullendComboBox) {
-        this.zelfVullendComboBox = zelfVullendComboBox;
+    public void setuitlopendComboBox(OptionalBooleanJCombobox uitlopendComboBox) {
+        this.uitlopendComboBox = uitlopendComboBox;
     }
 
     
@@ -52,8 +52,8 @@ public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
     @Override
     public void setSubTypeAttributes(Document doc) {
         super.setSubTypeAttributes(doc);
-        if (doc.getBoolean("zelfVullend") != null) {
-            setZelfVullend(doc.getBoolean("zelfVullend"));
+        if (doc.getBoolean("uitlopend") != null) {
+            setuitlopend(doc.getBoolean("uitlopend"));
         }
     }
 
@@ -62,13 +62,13 @@ public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
         if(source == null){
             return;
         }
-        setZelfVullend(((Bodembedekker) source).getZelfVullend());
+        setuitlopend(((Bodembedekker) source).getuitlopend());
     }
 
     @Override
     public HashMap<String, Object> getUpdateAttributesList() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("zelfVullend", zelfVullendComboBox.getSelectedBooleanValue());
+        result.put("uitlopend", uitlopendComboBox.getSelectedBooleanValue());
 
         return result;
     }
@@ -80,29 +80,29 @@ public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
         panel.setLayout(new GridBagLayout());
         DefaultGridBagConstraints c = new DefaultGridBagConstraints();
 
-        PropertyLabel zelfVullendLabel = new PropertyLabel("zelfvullend");
-        zelfVullendComboBox = new OptionalBooleanJCombobox();
-        zelfVullendComboBox.setEditable(false);
+        PropertyLabel uitlopendLabel = new PropertyLabel("uitlopend");
+        uitlopendComboBox = new OptionalBooleanJCombobox();
+        uitlopendComboBox.setEditable(false);
 
         if (panel.getComponents().length > 0) {
             c.gridy += panel.getComponents()[panel.getComponents().length].getY();
         }
         
-        panel.add(zelfVullendLabel, c);
+        panel.add(uitlopendLabel, c);
         c.gridx++;
-        panel.add(zelfVullendComboBox, c);
+        panel.add(uitlopendComboBox, c);
 
         return panel;
     }
 
     @Override
     public void refreshSubTypeComponents() {
-        zelfVullendComboBox.setSelectedBooleanValue(zelfVullend);
+        uitlopendComboBox.setSelectedBooleanValue(uitlopend);
     }
 
     @Override
     public void setUpPanelForInterrogation(InterrogationSetup interrS) {
-        zelfVullendComboBox.setEnabled(false);
+        uitlopendComboBox.setEnabled(false);
 
     }
 
@@ -110,9 +110,9 @@ public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
     public boolean validateInterrogatedValues() {
         boolean validationOk = true;
 
-        if (zelfVullendComboBox.getSelectedBooleanValue() != zelfVullend) {
+        if (uitlopendComboBox.getSelectedBooleanValue() != uitlopend) {
             validationOk = false;
-            zelfVullendComboBox.setBackground(COLOR_VALIDATION_FAILED);
+            uitlopendComboBox.setBackground(COLOR_VALIDATION_FAILED);
         }
 
         return validationOk;
@@ -120,7 +120,7 @@ public class Bodembedekker extends AbstractVastePlant implements IFloraSubType {
 
     @Override
     public void restoreBGColorForSubTypeComponents() {
-        zelfVullendComboBox.setBackground(COLOR_READY_FOR_VALIDATION);
+        uitlopendComboBox.setBackground(COLOR_READY_FOR_VALIDATION);
     }
 
     

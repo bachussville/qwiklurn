@@ -5,30 +5,12 @@
  */
 package com.bville.qwiklurn.swing;
 
-import com.bville.qwiklurn.repository.flora.SoilType;
+import com.bville.qwiklurn.repository.flora.*;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
-import com.bville.qwiklurn.repository.flora.SolarType;
-import com.bville.qwiklurn.repository.flora.DbManager;
-import com.bville.qwiklurn.repository.flora.FunctionType;
-import com.bville.qwiklurn.repository.flora.OptionalBooleanJCombobox;
-import com.bville.qwiklurn.repository.flora.Project;
-import com.bville.qwiklurn.repository.flora.ProjectMember;
-import com.bville.qwiklurn.repository.flora.SpecialsType;
-import com.bville.qwiklurn.repository.flora.Species;
-import com.bville.qwiklurn.repository.flora.TreePruneEnum;
 
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.HeadlessException;
+import java.awt.*;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -44,12 +26,14 @@ import java.util.stream.Collectors;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+
 import static javax.swing.JOptionPane.QUESTION_MESSAGE;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 /**
- *
  * @author Bart
  */
 public class Detail extends JFrame {
@@ -78,7 +62,7 @@ public class Detail extends JFrame {
     private final Map<Integer, JCheckBox> blossomMonthsCheckboxes = new TreeMap();
     private final Map<Integer, JCheckBox> harvestMonthsCheckboxes = new TreeMap();
     private JTextArea maintenanceJTextArea;
-    private JComboBox<TreePruneEnum> treePruneComboBox;
+    private JComboBox<SnoeiWijzeEnum> treePruneComboBox;
 
     private List<JComponent> validatableComponents;
 
@@ -89,7 +73,7 @@ public class Detail extends JFrame {
     private int listIdx = 0;
     private int activeMediaIdx = -1;
     private int maxMediaIdx = 0;
-    
+
     List<IFloraSubType> dataList;
 
     public Detail(DbManager dbM, String title, ActionType actionT, InterrogationSetup iSetup) throws HeadlessException, IOException {
@@ -197,56 +181,56 @@ public class Detail extends JFrame {
 
         saveButton = new JButton("Save");
         saveButton.addActionListener((ActionEvent e) -> {
-            try {
-                floraElement.setSpecies((Species) speciesCombo.getSelectedItem());
-                floraElement.setLatinName(latinNameText.getText().trim().toLowerCase());
-                floraElement.setCommonName(commonNameText.getText().trim().toLowerCase());
-                floraElement.setMaxHeight(maxHeightText.getText().trim().length() > 0 ? Integer.valueOf(maxHeightText.getText().trim()) : null);
-                floraElement.setMaxWidth(maxWidthText.getText().trim().length() > 0 ? Integer.valueOf(maxWidthText.getText().trim()) : null);
-                floraElement.setColor(colorText.getText().trim().length() > 0 ? colorText.getText().trim() : null);
-                floraElement.setFunctionTypes(toSelectedStringsList(functionTypeCheckboxes).stream().map(v -> {
-                    return FunctionType.parse(v);
-                }).collect(Collectors.toList()));
-                floraElement.setSoilTypes(toSelectedStringsList(soilTypeCheckboxes).stream().map(v -> {
-                    return SoilType.parse(v);
-                }).collect(Collectors.toList()));
-                floraElement.setSolarTypes(toSelectedStringsList(solarTypeCheckboxes).stream().map(v -> {
-                    return SolarType.parse(v);
-                }).collect(Collectors.toList()));
+                    try {
+                        floraElement.setSpecies((Species) speciesCombo.getSelectedItem());
+                        floraElement.setLatinName(latinNameText.getText().trim().toLowerCase());
+                        floraElement.setCommonName(commonNameText.getText().trim().toLowerCase());
+                        floraElement.setMaxHeight(maxHeightText.getText().trim().length() > 0 ? Integer.valueOf(maxHeightText.getText().trim()) : null);
+                        floraElement.setMaxWidth(maxWidthText.getText().trim().length() > 0 ? Integer.valueOf(maxWidthText.getText().trim()) : null);
+                        floraElement.setColor(colorText.getText().trim().length() > 0 ? colorText.getText().trim() : null);
+                        floraElement.setFunctionTypes(toSelectedStringsList(functionTypeCheckboxes).stream().map(v -> {
+                            return FunctieEnum.parse(v);
+                        }).collect(Collectors.toList()));
+                        floraElement.setSoilTypes(toSelectedStringsList(soilTypeCheckboxes).stream().map(v -> {
+                            return BodemEigenschapEnum.parse(v);
+                        }).collect(Collectors.toList()));
+                        floraElement.setSolarTypes(toSelectedStringsList(solarTypeCheckboxes).stream().map(v -> {
+                            return ZonlichtEnum.parse(v);
+                        }).collect(Collectors.toList()));
 
-                floraElement.setWinterLeaves(winterLeafCombo.getSelectedBooleanValue());
+                        floraElement.setWinterLeaves(winterLeafCombo.getSelectedBooleanValue());
 
-                floraElement.setBlossomMonths(toSelectedIntegersList(blossomMonthsCheckboxes).stream().map(v -> {
-                    return Integer.valueOf(v);
-                }).collect(Collectors.toList()));
+                        floraElement.setBlossomMonths(toSelectedIntegersList(blossomMonthsCheckboxes).stream().map(v -> {
+                            return Integer.valueOf(v);
+                        }).collect(Collectors.toList()));
 
-                floraElement.setHarvestMonths(toSelectedIntegersList(harvestMonthsCheckboxes).stream().map(v -> {
-                    return Integer.valueOf(v);
-                }).collect(Collectors.toList()));
+                        floraElement.setHarvestMonths(toSelectedIntegersList(harvestMonthsCheckboxes).stream().map(v -> {
+                            return Integer.valueOf(v);
+                        }).collect(Collectors.toList()));
 
-                floraElement.getSpecialProperties().clear();
-                specialPropsModel.getDataVector().stream().forEach(v -> {
-                    floraElement.getSpecialProperties().put((SpecialsType) v.get(0), v.get(1).toString());
-                });
-                floraElement.setMaintenance(maintenanceJTextArea.getText().trim().length() > 0 ? maintenanceJTextArea.getText().trim() : null);
+                        floraElement.getSpecialProperties().clear();
+                        specialPropsModel.getDataVector().stream().forEach(v -> {
+                            floraElement.getSpecialProperties().put((OpvallendeEigenschapEnum) v.get(0), v.get(1).toString());
+                        });
+                        floraElement.setMaintenance(maintenanceJTextArea.getText().trim().length() > 0 ? maintenanceJTextArea.getText().trim() : null);
 
-                dbMgr.saveFlora(floraElement);
+                        dbMgr.saveFlora(floraElement);
 
-                Project selProject = (Project) projectCombo.getSelectedItem();
-                if (selProject == null) {
-                    return;
-                } 
-                
-                List<Project> projects = dbMgr.listProjectsFor(floraElement);
-                if (projects.size() == 0
-                        || projects.stream().noneMatch(p->Objects.equals(p.getId(), selProject.getId()))){
-                    dbMgr.saveProject(selProject);
+                        Project selProject = (Project) projectCombo.getSelectedItem();
+                        if (selProject == null) {
+                            return;
+                        }
+
+                        List<Project> projects = dbMgr.listProjectsFor(floraElement);
+                        if (projects.size() == 0
+                                || projects.stream().noneMatch(p -> Objects.equals(p.getId(), selProject.getId()))) {
+                            dbMgr.saveProject(selProject);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        throw new RuntimeException(ex);
+                    }
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                throw new RuntimeException(ex);
-            }
-        }
         );
         saveButton.setVisible(actionType.allowsElementUpdate());
 
@@ -414,12 +398,8 @@ public class Detail extends JFrame {
         speciesCombo = new JComboBox<>();
         JButton addSpeciesButton = new JButton("New..");
         addSpeciesButton.setPreferredSize(new Dimension(80, 25));
-        addSpeciesButton.addActionListener((e) -> {
-            String name = JOptionPane.showInputDialog(meReference, "Welke naam ?");
-            Species newS = new Species(null, name, new ArrayList<ObjectId>());
-            speciesCombo.addItem(newS);
-            speciesCombo.setSelectedItem(newS);
-        });
+        addSpeciesButton.addActionListener(new SpeciesActionListener());
+
 
         JPanel speciesPanel = new JPanel();
         speciesPanel.setLayout(new GridBagLayout());
@@ -434,7 +414,7 @@ public class Detail extends JFrame {
         newProject.addActionListener((e) -> {
             String name = JOptionPane.showInputDialog(meReference, "Welke naam ?");
             Project newP = new Project(name);
-            newP.addMember(new ProjectMember(floraElement));
+            newP.addMember(new ProjectElement(floraElement));
             //dbMgr.saveProject(newP);
             projectCombo.addItem(newP);
             projectCombo.setSelectedItem(newP);
@@ -450,7 +430,7 @@ public class Detail extends JFrame {
             } else {
                 Project selectedProject = (Project) JOptionPane.showInputDialog(meReference, "Welke project ?", "Kies maar", QUESTION_MESSAGE, null, projects.toArray(), projects.get(0));
                 if (selectedProject != null) {
-                    selectedProject.addMember(new ProjectMember(floraElement));
+                    selectedProject.addMember(new ProjectElement(floraElement));
                     //dbMgr.saveProject(selectedProject);
                     projectCombo.addItem(selectedProject);
                     projectCombo.setSelectedItem(selectedProject);
@@ -536,7 +516,7 @@ public class Detail extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() > 1) {
                     Object[] dataRowValues = new Object[2];
-                    dataRowValues[0] = JOptionPane.showInputDialog(meReference, "Welk type karakteristiek ?", null, JOptionPane.QUESTION_MESSAGE, null, SpecialsType.values(), null);
+                    dataRowValues[0] = JOptionPane.showInputDialog(meReference, "Welk type karakteristiek ?", null, JOptionPane.QUESTION_MESSAGE, null, OpvallendeEigenschapEnum.values(), null);
                     if (null != dataRowValues[0]) {
                         dataRowValues[1] = JOptionPane.showInputDialog(meReference, "Welke waarde ?", null, JOptionPane.QUESTION_MESSAGE);
                         if (dataRowValues[1] != null) {
@@ -581,12 +561,12 @@ public class Detail extends JFrame {
 
         treePruneComboBox = new JComboBox<>();
         treePruneComboBox.setEditable(false);
-        for (int i = 0; i < TreePruneEnum.values().length; i++) {
-            treePruneComboBox.insertItemAt(TreePruneEnum.values()[i], i);
+        for (int i = 0; i < SnoeiWijzeEnum.values().length; i++) {
+            treePruneComboBox.insertItemAt(SnoeiWijzeEnum.values()[i], i);
         }
 
         treePruneComboBox.addActionListener((ActionEvent e) -> {
-            maintenanceJTextArea.setText(((TreePruneEnum) treePruneComboBox.getSelectedItem()).getLongDescription());
+            maintenanceJTextArea.setText(((SnoeiWijzeEnum) treePruneComboBox.getSelectedItem()).getLongDescription());
         });
         c.gridx = 0;
         c.gridy = 0;
@@ -835,7 +815,7 @@ public class Detail extends JFrame {
             });
         }
 
-        for (int i = 0; i < specialPropsModel.getRowCount();) {
+        for (int i = 0; i < specialPropsModel.getRowCount(); ) {
             specialPropsModel.removeRow(0);
         }
 
@@ -927,15 +907,15 @@ public class Detail extends JFrame {
         DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
         cbc.gridy = -1;
         cbc.fill = cbc.HORIZONTAL;
-        FunctionType[] functionTypes = FunctionType.values();
+        FunctieEnum[] functieEnums = FunctieEnum.values();
 
-        for (int i = 0; i < functionTypes.length; i++) {
-            FunctionType solarType = functionTypes[i];
+        for (int i = 0; i < functieEnums.length; i++) {
+            FunctieEnum solarType = functieEnums[i];
 
             cbc.gridx++;
             JCheckBox cb = new JCheckBox(solarType.getDescription());
             functionTypeCheckboxes.put(solarType.getCode(), cb);
-            cb.setName(functionTypes[i].name());
+            cb.setName(functieEnums[i].name());
             validatableComponents.add(cb);
 
             fPanel.add(cb, cbc);
@@ -947,23 +927,23 @@ public class Detail extends JFrame {
 
     private JPanel getSoilPanel() {
         soilPanel = new JPanel();
-        List<String> groupCodes = SoilType.getGroupCodes();
+        List<String> groupCodes = BodemEigenschapEnum.getGroupCodes();
         soilPanel.setLayout(new GridBagLayout());
         DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
         cbc.gridy = -1;
         cbc.fill = cbc.HORIZONTAL;
-        SoilType[] soilTypes = SoilType.values();
+        BodemEigenschapEnum[] bodemEigenschapEnums = BodemEigenschapEnum.values();
 
         for (int x = 0; x < groupCodes.size(); x++) {
             cbc.gridy++;
             cbc.gridx = -1;
-            for (int i = 0; i < soilTypes.length; i++) {
-                SoilType soilType = soilTypes[i];
-                if (soilType.getGroupCode().equalsIgnoreCase(groupCodes.get(x))) {
+            for (int i = 0; i < bodemEigenschapEnums.length; i++) {
+                BodemEigenschapEnum bodemEigenschapEnum = bodemEigenschapEnums[i];
+                if (bodemEigenschapEnum.getGroupCode().equalsIgnoreCase(groupCodes.get(x))) {
                     cbc.gridx++;
-                    JCheckBox cb = new JCheckBox(soilType.getDescription());
-                    soilTypeCheckboxes.put(soilType.getCode(), cb);
-                    cb.setName(soilTypes[i].name());
+                    JCheckBox cb = new JCheckBox(bodemEigenschapEnum.getDescription());
+                    soilTypeCheckboxes.put(bodemEigenschapEnum.getCode(), cb);
+                    cb.setName(bodemEigenschapEnums[i].name());
                     validatableComponents.add(cb);
                     soilPanel.add(cb, cbc);
                 }
@@ -981,15 +961,15 @@ public class Detail extends JFrame {
         DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
         cbc.gridy = -1;
         cbc.fill = cbc.HORIZONTAL;
-        SolarType[] solarTypes = SolarType.values();
+        ZonlichtEnum[] zonlichtEnums = ZonlichtEnum.values();
 
-        for (int i = 0; i < solarTypes.length; i++) {
-            SolarType solarType = solarTypes[i];
+        for (int i = 0; i < zonlichtEnums.length; i++) {
+            ZonlichtEnum zonlichtEnum = zonlichtEnums[i];
 
             cbc.gridx++;
-            JCheckBox cb = new JCheckBox(solarType.getDescription());
-            solarTypeCheckboxes.put(solarType.getCode(), cb);
-            cb.setName(solarTypes[i].name());
+            JCheckBox cb = new JCheckBox(zonlichtEnum.getDescription());
+            solarTypeCheckboxes.put(zonlichtEnum.getCode(), cb);
+            cb.setName(zonlichtEnums[i].name());
             validatableComponents.add(cb);
 
             solarPanel.add(cb, cbc);
@@ -1005,7 +985,7 @@ public class Detail extends JFrame {
         blossomMonthsPanel.setLayout(new GridBagLayout());
         DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
         cbc.fill = cbc.HORIZONTAL;
-        SolarType[] solarTypes = SolarType.values();
+        ZonlichtEnum[] zonlichtEnums = ZonlichtEnum.values();
 
         for (int i = 0; i < 12; i++) {
 
@@ -1030,7 +1010,7 @@ public class Detail extends JFrame {
         harvestMonthsPanel.setLayout(new GridBagLayout());
         DefaultGridBagConstraints cbc = new DefaultGridBagConstraints();
         cbc.fill = cbc.HORIZONTAL;
-        SolarType[] solarTypes = SolarType.values();
+        ZonlichtEnum[] zonlichtEnums = ZonlichtEnum.values();
 
         for (int i = 0; i < 12; i++) {
 
@@ -1077,7 +1057,22 @@ public class Detail extends JFrame {
         JButton updateButton = new JButton("update");
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(new File("C:\\Users\\Bart\\Downloads\\UploadQwikLurn"));
+                fc.setFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File f) {
+                        return f.getName().endsWith(".jpg")
+                                || f.getName().endsWith(".jpeg")
+                                || f.getName().endsWith(".png")
+                                || f.getName().endsWith(".bmp")
+                                ;
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return null;
+                    }
+                });
                 int returnVal = fc.showOpenDialog(Detail.this);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1145,21 +1140,11 @@ public class Detail extends JFrame {
     }
 
     private void restoreBGColorForComponents() {
-        validatableComponents.forEach(c -> {
-            c.setBackground(Color.WHITE);
-        });
+        validatableComponents.forEach(c -> c.setBackground(Color.WHITE));
 
         if (floraElement != null) {
             floraElement.restoreBGColorForSubTypeComponents();
         }
-    }
-
-    private Object[] getSpecialPropertyFromUser() {
-        String[] result = new String[2];
-        result[0] = "A";
-        result[1] = "B";
-
-        return result;
     }
 
     private String getMonthName(int i) {
@@ -1188,8 +1173,65 @@ public class Detail extends JFrame {
                 return "nov";
             case 12:
                 return "dec";
-        };
-
+        }
         throw new RuntimeException("Invalid month number: " + i);
+    }
+
+    private class SpeciesActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String name = JOptionPane.showInputDialog(meReference, "Welke naam ?");
+            List<VoortplantingEnum> selectedTechn = new ArrayList<>();
+            List<Object> options = new ArrayList<>();
+            if (name != null) {
+                JPanel subPanel = new JPanel();
+                subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.Y_AXIS));
+                Arrays.stream(VoortplantingEnum.values()).forEach(t -> {
+                            JCheckBox cb = new JCheckBox(t.getDescription());
+                            cb.addActionListener(e1 -> {
+                                if (cb.isSelected()) {
+                                    selectedTechn.add(t);
+                                } else {
+                                    selectedTechn.remove(t);
+                                }
+                            });
+                            subPanel.add(cb);
+                        }
+                );
+
+                JPanel actionButtons = new JPanel();
+                actionButtons.setLayout(new FlowLayout());
+                JButton close = new JButton("Ok");
+                close.addActionListener(e2 -> {
+
+                    Window w = SwingUtilities.getWindowAncestor(close);
+                    w.setVisible(false);
+                    w.dispose();
+
+                    String priceInput = JOptionPane.showInputDialog(meReference, "Welke richtprijs per stuk (gangbare grootte, combi-aankoop) ?");
+                    try {
+                        Double price = priceInput.trim().length() > 0 ? Double.parseDouble(priceInput) : null;
+
+                        Species newS = new Species(null, name, new ArrayList<>(), selectedTechn, price);
+                        speciesCombo.addItem(newS);
+                        speciesCombo.setSelectedItem(newS);
+                    } catch (NumberFormatException nfe) {
+                        nfe.printStackTrace();
+                    }
+                });
+                JButton cancel = new JButton("Cancel");
+                cancel.addActionListener(e3 -> {
+
+                    Window w = SwingUtilities.getWindowAncestor(cancel);
+                    w.setVisible(false);
+                    w.dispose();
+                });
+                actionButtons.add(close);
+                actionButtons.add(cancel);
+                subPanel.add(actionButtons);
+                options.add(subPanel);
+                JOptionPane.showOptionDialog(meReference, "Welke reproductie methodes ?", "Input", JOptionPane.OK_CANCEL_OPTION, QUESTION_MESSAGE, null, options.toArray(), null);
+            }
+        }
     }
 }

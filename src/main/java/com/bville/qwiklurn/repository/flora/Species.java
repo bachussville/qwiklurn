@@ -7,11 +7,12 @@ package com.bville.qwiklurn.repository.flora;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 /**
- *
  * @author Bart
  */
 public class Species {
@@ -19,17 +20,23 @@ public class Species {
     private ObjectId id;
     private String name;
     private List<ObjectId> members;
+    private List<VoortplantingEnum> reproductionTechniques;
+    private Double price;
+
 
     public Species(String name) {
         this.name = name;
         this.members = new ArrayList<>();
+        this.reproductionTechniques = new ArrayList<>();
     }
 
-    
-    public Species(ObjectId id, String name, List<ObjectId> members) {
+
+    public Species(ObjectId id, String name, List<ObjectId> members, List<VoortplantingEnum> reproductionTechniques, Double price) {
         this.id = id;
         this.name = name;
         this.members = members;
+        this.reproductionTechniques = reproductionTechniques;
+        this.price = price;
     }
 
     public ObjectId getId() {
@@ -56,6 +63,22 @@ public class Species {
         this.members = members;
     }
 
+    public List<VoortplantingEnum> getReproductionTechniques() {
+        return reproductionTechniques;
+    }
+
+    public void setReproductionTechniques(List<VoortplantingEnum> reproductionTechniques) {
+        this.reproductionTechniques = reproductionTechniques;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
     public Document toBson() {
         Document doc = new Document();
 
@@ -65,6 +88,8 @@ public class Species {
 
         doc.put("name", getName());
         doc.put("members", getMembers());
+        doc.put("reproduction", getReproductionTechniques().stream().map(VoortplantingEnum::getCode).collect(Collectors.toList()));
+        doc.put("price", getPrice());
 
         return doc;
     }
@@ -72,7 +97,10 @@ public class Species {
     public static Species fromBson(Document doc) {
         return new Species(doc.getObjectId("_id"),
                 doc.getString("name"),
-                doc.getList("members", ObjectId.class));
+                doc.getList("members", ObjectId.class),
+                doc.getList("reproduction", String.class).stream().map(VoortplantingEnum::parse).collect(Collectors.toList()),
+                doc.getDouble("price")
+        );
     }
 
     @Override

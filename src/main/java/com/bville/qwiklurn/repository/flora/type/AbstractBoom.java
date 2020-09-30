@@ -6,8 +6,8 @@
 package com.bville.qwiklurn.repository.flora.type;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import com.bville.qwiklurn.repository.flora.LeafageEnum;
-import com.bville.qwiklurn.repository.flora.TreeShapeEnum;
+import com.bville.qwiklurn.repository.flora.GebladerteEnum;
+import com.bville.qwiklurn.repository.flora.BoomVormEnum;
 import com.bville.qwiklurn.swing.DefaultGridBagConstraints;
 import com.bville.qwiklurn.swing.InterrogationSetup;
 import com.bville.qwiklurn.swing.PropertyLabel;
@@ -24,11 +24,11 @@ import org.bson.Document;
  */
 abstract class AbstractBoom extends AbstractFlora implements IFloraSubType {
 
-    private LeafageEnum leafage = null;
-    private TreeShapeEnum treeShape = null;
+    private GebladerteEnum leafage = null;
+    private BoomVormEnum treeShape = null;
     
-    private JComboBox<LeafageEnum> leafageComboBox;
-    private JComboBox<TreeShapeEnum> treeShapeComboBox;
+    private JComboBox<GebladerteEnum> leafageComboBox;
+    private JComboBox<BoomVormEnum> treeShapeComboBox;
 
     protected AbstractBoom(Boolean defaultWinterLeaves) {
         super(defaultWinterLeaves);
@@ -36,26 +36,26 @@ abstract class AbstractBoom extends AbstractFlora implements IFloraSubType {
         this.treeShapeComboBox = new JComboBox<>();
     }
 
-    public LeafageEnum getLeafage() {
+    public GebladerteEnum getLeafage() {
         return leafage;
     }
 
-    public void setLeafage(LeafageEnum leafage) {
+    public void setLeafage(GebladerteEnum leafage) {
         this.leafage = leafage;
     }
 
-    public TreeShapeEnum getTreeShape() {
+    public BoomVormEnum getTreeShape() {
         return treeShape;
     }
 
-    public void setTreeShape(TreeShapeEnum treeShape) {
+    public void setTreeShape(BoomVormEnum treeShape) {
         this.treeShape = treeShape;
     }
 
     @Override
     public void setSubTypeAttributes(Document doc) {
         if (doc.get("leafage", String.class) != null) {
-            setLeafage(LeafageEnum.parse(doc.get("leafage", String.class)));
+            setLeafage(GebladerteEnum.parse(doc.get("leafage", String.class)));
         }
         if (doc.get("treeShape", String.class) != null) {
             setTreeShape(treeShape.parse(doc.get("treeShape", String.class)));
@@ -74,15 +74,15 @@ abstract class AbstractBoom extends AbstractFlora implements IFloraSubType {
         PropertyLabel leafageLabel = new PropertyLabel("Type gebladerte");
         leafageComboBox = new JComboBox<>();
         leafageComboBox.setEditable(false);
-        for (int i = 0; i < LeafageEnum.values().length; i++) {
-            leafageComboBox.insertItemAt(LeafageEnum.values()[i], i);
+        for (int i = 0; i < GebladerteEnum.values().length; i++) {
+            leafageComboBox.insertItemAt(GebladerteEnum.values()[i], i);
         }
 
         PropertyLabel shapeLabel = new PropertyLabel("Vorm");
         treeShapeComboBox = new JComboBox<>();
         treeShapeComboBox.setEditable(false);
-        for (int i = 0; i < TreeShapeEnum.values().length; i++) {
-            treeShapeComboBox.insertItemAt(TreeShapeEnum.values()[i], i);
+        for (int i = 0; i < BoomVormEnum.values().length; i++) {
+            treeShapeComboBox.insertItemAt(BoomVormEnum.values()[i], i);
         }
 
         panel.add(leafageLabel, c);
@@ -126,10 +126,10 @@ abstract class AbstractBoom extends AbstractFlora implements IFloraSubType {
     public HashMap<String, Object> getUpdateAttributesList() {
         HashMap<String, Object> result = new HashMap<>();
         if (leafageComboBox.getSelectedItem() != null) {
-            result.put("leafage", ((LeafageEnum) leafageComboBox.getSelectedItem()).getCode());
+            result.put("leafage", ((GebladerteEnum) leafageComboBox.getSelectedItem()).getCode());
         }
         if (treeShapeComboBox.getSelectedItem() != null) {
-            result.put("treeShape", ((TreeShapeEnum) treeShapeComboBox.getSelectedItem()).getCode());
+            result.put("treeShape", ((BoomVormEnum) treeShapeComboBox.getSelectedItem()).getCode());
         }
 
         return result;

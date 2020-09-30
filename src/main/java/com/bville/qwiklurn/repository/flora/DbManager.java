@@ -22,7 +22,6 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import static com.mongodb.client.model.Filters.*;
-import com.mongodb.client.model.Projections;
 import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Updates.*;
 import java.io.File;
@@ -41,7 +40,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 /**
@@ -225,7 +223,7 @@ public class DbManager {
             getProjectCollection().updateOne(eq("_id", project.getId()),
                     combine(
                             set("name", project.getName()),
-                            set("members", project.getMembers().stream().map(ProjectMember::toBson).collect(Collectors.toList()))
+                            set("members", project.getMembers().stream().map(ProjectElement::toBson).collect(Collectors.toList()))
                     ));
         } else {
             project.setCreationStamp(Instant.now().getEpochSecond());

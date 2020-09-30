@@ -96,8 +96,8 @@ public class DbManagerTest {
 
         //SubType for Loofboom is TREE
         //newTree.setSubType(FloraSubTypeEnum.TREE);
-        List<FunctionType> fTypes = new ArrayList<>();
-        fTypes.add(forInsert ? FunctionType.DECO : FunctionType.BIO);
+        List<FunctieEnum> fTypes = new ArrayList<>();
+        fTypes.add(forInsert ? FunctieEnum.DECO : FunctieEnum.BIO);
         newTree.setFunctionTypes(fTypes);
         Species species = new Species(forInsert ? "species" : "anotherSpecies");
         newTree.setSpecies(species);
@@ -120,11 +120,11 @@ public class DbManagerTest {
         newTree.setMaintenance(forInsert ? "maintenance" : "moreMaintenance");
         newTree.setColor(forInsert ? "color" : "anotherColor");
         newTree.setWinterLeaves(forInsert ? Boolean.FALSE : Boolean.TRUE);
-        List<SoilType> soiltypes = new ArrayList();
-        soiltypes.add(forInsert ? SoilType.KALK_ARM : SoilType.HUMUS_ARM);
+        List<BodemEigenschapEnum> soiltypes = new ArrayList();
+        soiltypes.add(forInsert ? BodemEigenschapEnum.KALK_ARM : BodemEigenschapEnum.HUMUS_ARM);
         newTree.setSoilTypes(soiltypes);
-        Map<SpecialsType, String> specialProperties = new EnumMap<SpecialsType, String>(SpecialsType.class);
-        specialProperties.put(SpecialsType.GEUR, forInsert ? "lekker" : "nogLekkerder");
+        Map<OpvallendeEigenschapEnum, String> specialProperties = new EnumMap<OpvallendeEigenschapEnum, String>(OpvallendeEigenschapEnum.class);
+        specialProperties.put(OpvallendeEigenschapEnum.GEUR, forInsert ? "lekker" : "nogLekkerder");
         newTree.setSpecialProperties(specialProperties);
         newTree.setBlossomMonths(forInsert ? Arrays.asList(4) : Arrays.asList(5));
         newTree.setHarvestMonths(forInsert ? Arrays.asList(8) : Arrays.asList(9));
@@ -134,7 +134,7 @@ public class DbManagerTest {
     private void validateTree(boolean forInsert, Loofboom readTreeClass, Loofboom newTree, Species readSpecies) {
         assertNotNull(readTreeClass.getId().toHexString());
         assertEquals(FloraSubTypeEnum.LOOFBOOM, readTreeClass.getSubType());
-        assertEquals(forInsert ? FunctionType.DECO : FunctionType.BIO, readTreeClass.getFunctionTypes().get(0));
+        assertEquals(forInsert ? FunctieEnum.DECO : FunctieEnum.BIO, readTreeClass.getFunctionTypes().get(0));
         assertNotNull(readTreeClass.getSpecies());
         assertEquals(forInsert ? "lName" : "anotherLatinName", newTree.getLatinName());
         assertEquals(forInsert ? "cName" : "anotherCommonName", newTree.getCommonName());
@@ -146,8 +146,8 @@ public class DbManagerTest {
         assertEquals(forInsert ? "maintenance" : "moreMaintenance", readTreeClass.getMaintenance());
         assertEquals(forInsert ? "color" : "anotherColor", readTreeClass.getColor());
         assertEquals(forInsert ? Boolean.FALSE : Boolean.TRUE, readTreeClass.getWinterLeaves());
-        assertEquals(forInsert ? SoilType.KALK_ARM : SoilType.HUMUS_ARM, readTreeClass.getSoilTypes().get(0));
-        assertEquals(forInsert ? "lekker" : "nogLekkerder", readTreeClass.getSpecialProperties().get(SpecialsType.GEUR));
+        assertEquals(forInsert ? BodemEigenschapEnum.KALK_ARM : BodemEigenschapEnum.HUMUS_ARM, readTreeClass.getSoilTypes().get(0));
+        assertEquals(forInsert ? "lekker" : "nogLekkerder", readTreeClass.getSpecialProperties().get(OpvallendeEigenschapEnum.GEUR));
         assertEquals(forInsert ? "4" : "5", "" + readTreeClass.getBlossomMonths().get(0));
         assertEquals(forInsert ? "8" : "9", "" + readTreeClass.getHarvestMonths().get(0));
 
@@ -290,7 +290,7 @@ public class DbManagerTest {
         assertNotNull(floraElement.getId());
 
         Project projectElement = dbMgr.getDummyProject("EersteKlant");
-        projectElement.getMembers().add(new ProjectMember(floraElement.getId(), "cactus", -1));
+        projectElement.getMembers().add(new ProjectElement(floraElement.getId(), "cactus", -1));
         dbMgr.saveProject(projectElement);
 
         Project a = dbMgr.getProjectById(projectElement.getId());

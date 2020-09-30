@@ -64,7 +64,7 @@ public class DBManagerForTest extends DbManager {
         dummy.setColor("kakigroen");
         dummy.setWinterLeaves(Boolean.TRUE);
         dummy.setSoilTypes(new ArrayList<>());
-        dummy.setSpecialProperties(new EnumMap<>(SpecialsType.class));
+        dummy.setSpecialProperties(new EnumMap<>(OpvallendeEigenschapEnum.class));
         dummy.setBlossomMonths(Arrays.asList(4));
         dummy.setHarvestMonths(Arrays.asList(8));
 

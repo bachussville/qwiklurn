@@ -5,16 +5,10 @@
  */
 package com.bville.qwiklurn.repository.flora.type;
 
+import com.bville.qwiklurn.repository.flora.*;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFlora;
-import com.bville.qwiklurn.repository.flora.DbManager;
-import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
-import com.bville.qwiklurn.repository.flora.FunctionType;
-import com.bville.qwiklurn.repository.flora.SeasonType;
-import com.bville.qwiklurn.repository.flora.SoilType;
-import com.bville.qwiklurn.repository.flora.SolarType;
-import com.bville.qwiklurn.repository.flora.SpecialsType;
-import com.bville.qwiklurn.repository.flora.Species;
+
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,10 +39,10 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
     private FloraSubTypeEnum subType;
     private Species species;
     private List<Object> mediaReferences;
-    private List<FunctionType> functionTypes;
-    private List<SoilType> soilTypes;
-    private List<SolarType> solarTypes;
-    private Map<SpecialsType, String> specialProperties;
+    private List<FunctieEnum> functieEnums;
+    private List<BodemEigenschapEnum> bodemEigenschapEnums;
+    private List<ZonlichtEnum> zonlichtEnums;
+    private Map<OpvallendeEigenschapEnum, String> specialProperties;
     private List<Integer> blossomMonths, harvestMonths;
     private String latinName, commonName, maintenance, color;
     private Integer maxHeight;
@@ -60,9 +54,9 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
     public AbstractFlora(Boolean winterLeaves) {
         this.winterLeaves = winterLeaves;
         this.mediaReferences = new ArrayList<>();
-        this.functionTypes = new ArrayList<>();
-        this.soilTypes = new ArrayList<>();
-        this.solarTypes = new ArrayList<>();
+        this.functieEnums = new ArrayList<>();
+        this.bodemEigenschapEnums = new ArrayList<>();
+        this.zonlichtEnums = new ArrayList<>();
         this.specialProperties = new HashMap<>();
         this.blossomMonths = new ArrayList<>();
         this.harvestMonths = new ArrayList<>();
@@ -89,25 +83,25 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
         ArrayList<String> functionTypesAsString = (ArrayList) doc.get("functions");
         if (functionTypesAsString != null && !functionTypesAsString.isEmpty()) {
             for (int i = 0; i < functionTypesAsString.size(); i++) {
-                this.addFunctionType(FunctionType.parse(functionTypesAsString.get(i)));
+                this.addFunctionType(FunctieEnum.parse(functionTypesAsString.get(i)));
             }
         }
         ArrayList<String> soilTypesAsString = (ArrayList) doc.get("soilTypes");
         if (soilTypesAsString != null && !soilTypesAsString.isEmpty()) {
             for (int i = 0; i < soilTypesAsString.size(); i++) {
-                this.addSoilType(SoilType.parse(soilTypesAsString.get(i)));
+                this.addSoilType(BodemEigenschapEnum.parse(soilTypesAsString.get(i)));
             }
         }
         ArrayList<String> solarTypesAsString = (ArrayList) doc.get("solarTypes");
         if (solarTypesAsString != null && !solarTypesAsString.isEmpty()) {
             for (int i = 0; i < solarTypesAsString.size(); i++) {
-                this.addSolarType(SolarType.parse(solarTypesAsString.get(i)));
+                this.addSolarType(ZonlichtEnum.parse(solarTypesAsString.get(i)));
             }
         }
         ArrayList<Document> specialProps = (ArrayList) doc.get("specials");
         if (specialProps != null && !specialProps.isEmpty()) {
             for (int i = 0; i < specialProps.size(); i++) {
-                this.addSpecialProperty(SpecialsType.parse(
+                this.addSpecialProperty(OpvallendeEigenschapEnum.parse(
                         specialProps.get(i).get("code").toString()),
                         specialProps.get(i).get("value").toString()
                 );
@@ -315,94 +309,94 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
     }
 
     @Override
-    public List<SoilType> getSoilTypes() {
-        return soilTypes;
+    public List<BodemEigenschapEnum> getSoilTypes() {
+        return bodemEigenschapEnums;
     }
 
     @Override
-    public void setSoilTypes(List<SoilType> soilTypes) {
-        this.soilTypes = soilTypes;
+    public void setSoilTypes(List<BodemEigenschapEnum> bodemEigenschapEnums) {
+        this.bodemEigenschapEnums = bodemEigenschapEnums;
     }
 
     @Override
-    public void addSoilType(SoilType soilType) {
-        if (!soilTypes.contains(soilType)) {
-            this.soilTypes.add(soilType);
+    public void addSoilType(BodemEigenschapEnum bodemEigenschapEnum) {
+        if (!bodemEigenschapEnums.contains(bodemEigenschapEnum)) {
+            this.bodemEigenschapEnums.add(bodemEigenschapEnum);
         }
     }
 
     @Override
-    public void removeSoilType(SoilType soilType) {
-        if (soilTypes.contains(soilType)) {
-            this.soilTypes.remove(soilType);
+    public void removeSoilType(BodemEigenschapEnum bodemEigenschapEnum) {
+        if (bodemEigenschapEnums.contains(bodemEigenschapEnum)) {
+            this.bodemEigenschapEnums.remove(bodemEigenschapEnum);
         }
     }
 
     @Override
-    public List<FunctionType> getFunctionTypes() {
-        return functionTypes;
+    public List<FunctieEnum> getFunctionTypes() {
+        return functieEnums;
     }
 
     @Override
-    public void setFunctionTypes(List<FunctionType> functionTypes) {
-        this.functionTypes = functionTypes;
+    public void setFunctionTypes(List<FunctieEnum> functieEnums) {
+        this.functieEnums = functieEnums;
     }
 
     @Override
-    public void addFunctionType(FunctionType functionType) {
-        if (!functionTypes.contains(functionType)) {
-            this.functionTypes.add(functionType);
+    public void addFunctionType(FunctieEnum functieEnum) {
+        if (!functieEnums.contains(functieEnum)) {
+            this.functieEnums.add(functieEnum);
         }
     }
 
     @Override
-    public void removeFunctionType(FunctionType functionType) {
-        if (functionTypes.contains(functionType)) {
-            this.functionTypes.remove(functionType);
+    public void removeFunctionType(FunctieEnum functieEnum) {
+        if (functieEnums.contains(functieEnum)) {
+            this.functieEnums.remove(functieEnum);
         }
     }
 
     @Override
-    public List<SolarType> getSolarTypes() {
-        return solarTypes;
+    public List<ZonlichtEnum> getSolarTypes() {
+        return zonlichtEnums;
     }
 
     @Override
-    public void setSolarTypes(List<SolarType> solarTypes) {
-        this.solarTypes = solarTypes;
+    public void setSolarTypes(List<ZonlichtEnum> zonlichtEnums) {
+        this.zonlichtEnums = zonlichtEnums;
     }
 
     @Override
-    public void addSolarType(SolarType solarType) {
-        if (!solarTypes.contains(solarType)) {
-            this.solarTypes.add(solarType);
+    public void addSolarType(ZonlichtEnum zonlichtEnum) {
+        if (!zonlichtEnums.contains(zonlichtEnum)) {
+            this.zonlichtEnums.add(zonlichtEnum);
         }
     }
 
     @Override
-    public void removeSolarType(SolarType solarType) {
-        if (solarTypes.contains(solarType)) {
-            this.solarTypes.remove(solarType);
+    public void removeSolarType(ZonlichtEnum zonlichtEnum) {
+        if (zonlichtEnums.contains(zonlichtEnum)) {
+            this.zonlichtEnums.remove(zonlichtEnum);
         }
     }
 
     @Override
-    public Map<SpecialsType, String> getSpecialProperties() {
+    public Map<OpvallendeEigenschapEnum, String> getSpecialProperties() {
         return specialProperties;
     }
 
     @Override
-    public void setSpecialProperties(Map<SpecialsType, String> specialProperties) {
+    public void setSpecialProperties(Map<OpvallendeEigenschapEnum, String> specialProperties) {
         this.specialProperties = specialProperties;
     }
 
     @Override
-    public void addSpecialProperty(SpecialsType type, String value) {
+    public void addSpecialProperty(OpvallendeEigenschapEnum type, String value) {
         this.specialProperties.put(type, value);
     }
 
     @Override
-    public void removeSpecialProperty(SpecialsType type) {
+    public void removeSpecialProperty(OpvallendeEigenschapEnum type) {
         this.specialProperties.forEach((c, v) -> {
             if (c == type) {
                 this.specialProperties.remove(c);
@@ -474,9 +468,9 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
         this.subType = getSubType();
 
         this.mediaReferences = new ArrayList<>();
-        this.functionTypes = new ArrayList<>();
-        this.soilTypes = new ArrayList<>();
-        this.solarTypes = new ArrayList<>();
+        this.functieEnums = new ArrayList<>();
+        this.bodemEigenschapEnums = new ArrayList<>();
+        this.zonlichtEnums = new ArrayList<>();
         this.specialProperties = new HashMap<>();
         this.blossomMonths = new ArrayList<>();
         this.harvestMonths = new ArrayList<>();
@@ -490,9 +484,9 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
             this.subType = defaultContent.getSubType();
         }
         this.species = defaultContent.getSpecies();
-        this.functionTypes = defaultContent.getFunctionTypes();
-        this.soilTypes = defaultContent.getSoilTypes();
-        this.solarTypes = defaultContent.getSolarTypes();
+        this.functieEnums = defaultContent.getFunctionTypes();
+        this.bodemEigenschapEnums = defaultContent.getSoilTypes();
+        this.zonlichtEnums = defaultContent.getSolarTypes();
         this.specialProperties = defaultContent.getSpecialProperties();
         this.blossomMonths = defaultContent.getBlossomMonths();
         this.harvestMonths = defaultContent.getHarvestMonths();

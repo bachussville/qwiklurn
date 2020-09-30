@@ -6,11 +6,10 @@
 package com.bville.qwiklurn.repository.flora.type.interfaces;
 
 import com.bville.qwiklurn.repository.flora.FloraSubTypeEnum;
-import com.bville.qwiklurn.repository.flora.FunctionType;
-import com.bville.qwiklurn.repository.flora.SeasonType;
-import com.bville.qwiklurn.repository.flora.SoilType;
-import com.bville.qwiklurn.repository.flora.SolarType;
-import com.bville.qwiklurn.repository.flora.SpecialsType;
+import com.bville.qwiklurn.repository.flora.FunctieEnum;
+import com.bville.qwiklurn.repository.flora.BodemEigenschapEnum;
+import com.bville.qwiklurn.repository.flora.ZonlichtEnum;
+import com.bville.qwiklurn.repository.flora.OpvallendeEigenschapEnum;
 import com.bville.qwiklurn.repository.flora.Species;
 import java.util.Date;
 import java.util.List;
@@ -28,7 +27,7 @@ public interface IFlora {
 
     public FloraSubTypeEnum getSubType();
 
-    public List<FunctionType> getFunctionTypes();
+    public List<FunctieEnum> getFunctionTypes();
 
     public Species getSpecies();
 
@@ -48,11 +47,11 @@ public interface IFlora {
 
     public Boolean getWinterLeaves();
 
-    public List<SoilType> getSoilTypes();
+    public List<BodemEigenschapEnum> getSoilTypes();
 
-    public List<SolarType> getSolarTypes();
+    public List<ZonlichtEnum> getSolarTypes();
 
-    public Map<SpecialsType, String> getSpecialProperties();
+    public Map<OpvallendeEigenschapEnum, String> getSpecialProperties();
 
     public List<Integer> getBlossomMonths();
 
@@ -81,29 +80,29 @@ public interface IFlora {
 
     public void setSpecies(Species species);
 
-    public void setFunctionTypes(List<FunctionType> functionTypes);
+    public void setFunctionTypes(List<FunctieEnum> functieEnums);
 
-    public void addFunctionType(FunctionType functionType);
+    public void addFunctionType(FunctieEnum functieEnum);
 
-    public void removeFunctionType(FunctionType functionType);
+    public void removeFunctionType(FunctieEnum functieEnum);
 
-    public void setSoilTypes(List<SoilType> soilTypes);
+    public void setSoilTypes(List<BodemEigenschapEnum> bodemEigenschapEnums);
 
-    public void addSoilType(SoilType soilType);
+    public void addSoilType(BodemEigenschapEnum bodemEigenschapEnum);
 
-    public void removeSoilType(SoilType soilType);
+    public void removeSoilType(BodemEigenschapEnum bodemEigenschapEnum);
 
-    public void setSolarTypes(List<SolarType> solarTypes);
+    public void setSolarTypes(List<ZonlichtEnum> zonlichtEnums);
 
-    public void addSolarType(SolarType solarType);
+    public void addSolarType(ZonlichtEnum zonlichtEnum);
 
-    public void removeSolarType(SolarType solarType);
+    public void removeSolarType(ZonlichtEnum zonlichtEnum);
 
-    public void setSpecialProperties(Map<SpecialsType, String> specialProperties);
+    public void setSpecialProperties(Map<OpvallendeEigenschapEnum, String> specialProperties);
 
-    public void addSpecialProperty(SpecialsType type, String value);
+    public void addSpecialProperty(OpvallendeEigenschapEnum type, String value);
 
-    public void removeSpecialProperty(SpecialsType type);
+    public void removeSpecialProperty(OpvallendeEigenschapEnum type);
 
     public void setBlossomMonths(List<Integer> months);
 

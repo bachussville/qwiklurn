@@ -1,5 +1,6 @@
 
 Op de planning:
-   - Toewijzen aan project
+   - Soorteigenschappen versus afwijkende eigenschappen
+   - aantal per m²
 
 

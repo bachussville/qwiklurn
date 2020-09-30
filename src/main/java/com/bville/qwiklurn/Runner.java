@@ -20,8 +20,7 @@ import javax.swing.JOptionPane;
 public class Runner {
 
     public static void main(String[] args) throws IOException {
-        RuntimeManager.setupFor(RuntimeManager.Environment.DEV);
-        //RuntimeManager.setupFor(RuntimeManager.Environment.PROD);
+        RuntimeManager.setupFor(RuntimeManager.Environment.parse(args[0]));
         new Runner().run();
     }
 
