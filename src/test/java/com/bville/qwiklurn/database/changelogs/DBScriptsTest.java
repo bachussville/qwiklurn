@@ -9,39 +9,57 @@ import com.bville.qwiklurn.repository.flora.DBManagerForTest;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import org.bson.Document;
-import static org.junit.Assert.assertEquals;
+
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 /**
- *
  * @author Bart
  */
 public class DBScriptsTest {
 
     private static DBManagerForTest dbMgr;
 
-    @Before
-    public void init(){
+    @BeforeClass
+    public static void setup() {
         dbMgr = new DBManagerForTest(null);
         MongoDatabase db = dbMgr.connect();
         db.drop();
 
         dbMgr.connect();
         dbMgr.setUpDatabase();
-        
     }
+
+    @Before
+    public void initTest() {
+        MongoDatabase db = dbMgr.connect();
+        dbMgr.clearAllCollections();
+    }
+
+
     @Test
     public void uniqueIndexForFloraIsActive() {
         MongoCollection f = dbMgr.getFloraCollection();
         Document doc = dbMgr.getDummyTree("u").toBson();
         Document doc2 = dbMgr.getDummyTree("u").toBson();
         f.insertOne(doc);
+        long count = f.countDocuments();
+        try {
+            Thread.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         try {
             f.insertOne(doc2);
+            count = f.countDocuments();
+            System.out.println("Long = " + count);
+            System.out.println("key1 = " + doc.toJson());
+            System.out.println("key1 = " + doc2.toJson());
             fail("Duplicate shouldn't be inserted");
         } catch (MongoException e) {
             assertEquals(11000, e.getCode());
@@ -49,6 +67,7 @@ public class DBScriptsTest {
         }
 
     }
+
     @Test
     public void uniqueIndexForSpeciesIsActive() {
         MongoCollection f = dbMgr.getSpeciesCollection();
@@ -63,7 +82,7 @@ public class DBScriptsTest {
             assertTrue("Wrong duplicate key", e.getMessage().indexOf("name_Unq") > 0);
         }
     }
-    
+
     @Test
     public void uniqueIndexForProjectsIsActive() {
         MongoCollection f = dbMgr.getProjectCollection();
@@ -77,5 +96,5 @@ public class DBScriptsTest {
             assertEquals(11000, e.getCode());
             assertTrue("Wrong duplicate key", e.getMessage().indexOf("name_Unq") > 0);
         }
-    }    
+    }
 }

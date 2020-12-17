@@ -21,7 +21,7 @@ public class Species {
     private String name;
     private List<ObjectId> members;
     private List<VoortplantingEnum> reproductionTechniques;
-    private Double price;
+    private PricingCategory price;
 
 
     public Species(String name) {
@@ -31,7 +31,7 @@ public class Species {
     }
 
 
-    public Species(ObjectId id, String name, List<ObjectId> members, List<VoortplantingEnum> reproductionTechniques, Double price) {
+    public Species(ObjectId id, String name, List<ObjectId> members, List<VoortplantingEnum> reproductionTechniques, PricingCategory price) {
         this.id = id;
         this.name = name;
         this.members = members;
@@ -71,11 +71,11 @@ public class Species {
         this.reproductionTechniques = reproductionTechniques;
     }
 
-    public Double getPrice() {
+    public PricingCategory getPrice() {
         return price;
     }
 
-    public void setPrice(Double price) {
+    public void setPrice(PricingCategory price) {
         this.price = price;
     }
 
@@ -89,7 +89,7 @@ public class Species {
         doc.put("name", getName());
         doc.put("members", getMembers());
         doc.put("reproduction", getReproductionTechniques().stream().map(VoortplantingEnum::getCode).collect(Collectors.toList()));
-        doc.put("price", getPrice());
+        doc.put("price", getPrice().name());
 
         return doc;
     }
@@ -99,7 +99,7 @@ public class Species {
                 doc.getString("name"),
                 doc.getList("members", ObjectId.class),
                 doc.getList("reproduction", String.class).stream().map(VoortplantingEnum::parse).collect(Collectors.toList()),
-                doc.getDouble("price")
+                PricingCategory.valueOf(doc.getString("price"))
         );
     }
 

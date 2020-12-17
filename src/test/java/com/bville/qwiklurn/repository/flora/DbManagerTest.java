@@ -7,6 +7,7 @@ package com.bville.qwiklurn.repository.flora;
 
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
 import com.bville.qwiklurn.repository.flora.type.Loofboom;
+import com.google.common.collect.Lists;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
@@ -20,18 +21,16 @@ import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import static org.junit.Assert.assertNull;
+
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -100,6 +99,8 @@ public class DbManagerTest {
         fTypes.add(forInsert ? FunctieEnum.DECO : FunctieEnum.BIO);
         newTree.setFunctionTypes(fTypes);
         Species species = new Species(forInsert ? "species" : "anotherSpecies");
+        species.setReproductionTechniques(Lists.newArrayList(VoortplantingEnum.STEKKEN, VoortplantingEnum.SPLITSEN));
+        species.setPrice(PricingCategory.B);
         newTree.setSpecies(species);
         newTree.setLatinName(forInsert ? "lName" : "anotherLatinName");
         newTree.setCommonName(forInsert ? "cName" : "anotherCommonName");
@@ -118,7 +119,6 @@ public class DbManagerTest {
         newTree.setMaxHeight(forInsert ? 200 : 400);
         newTree.setMaxWidth(forInsert ? 150 : 300);
         newTree.setMaintenance(forInsert ? "maintenance" : "moreMaintenance");
-        newTree.setColor(forInsert ? "color" : "anotherColor");
         newTree.setWinterLeaves(forInsert ? Boolean.FALSE : Boolean.TRUE);
         List<BodemEigenschapEnum> soiltypes = new ArrayList();
         soiltypes.add(forInsert ? BodemEigenschapEnum.KALK_ARM : BodemEigenschapEnum.HUMUS_ARM);
@@ -144,7 +144,6 @@ public class DbManagerTest {
         assertEquals(forInsert ? 200 : 400, readTreeClass.getMaxHeight().longValue());
         assertEquals(forInsert ? 150 : 300, readTreeClass.getMaxWidth().longValue());
         assertEquals(forInsert ? "maintenance" : "moreMaintenance", readTreeClass.getMaintenance());
-        assertEquals(forInsert ? "color" : "anotherColor", readTreeClass.getColor());
         assertEquals(forInsert ? Boolean.FALSE : Boolean.TRUE, readTreeClass.getWinterLeaves());
         assertEquals(forInsert ? BodemEigenschapEnum.KALK_ARM : BodemEigenschapEnum.HUMUS_ARM, readTreeClass.getSoilTypes().get(0));
         assertEquals(forInsert ? "lekker" : "nogLekkerder", readTreeClass.getSpecialProperties().get(OpvallendeEigenschapEnum.GEUR));
@@ -178,7 +177,7 @@ public class DbManagerTest {
     public void saveTreeClass_newWithExistingSpecies() {
         dbMgr.clearAllCollections();
 
-        dbMgr.saveSpecies(new Species("species"));
+        dbMgr.saveSpecies(dbMgr.getDummySpecies("species"));
         Document dbSpecies = (Document) dbMgr.getSpeciesCollection().find().first();
 
         Loofboom newTree = getCompleteTreeClass(true);
@@ -223,7 +222,7 @@ public class DbManagerTest {
     @Test
     public void saveTreeClass_existingWithExistingSpecies() {
         dbMgr.clearAllCollections();
-        dbMgr.saveSpecies(new Species("species"));
+        dbMgr.saveSpecies(dbMgr.getDummySpecies("species"));
         Document dbSpecies = (Document) dbMgr.getSpeciesCollection().find().first();
 
         Loofboom oldTree = getCompleteTreeClass(true);

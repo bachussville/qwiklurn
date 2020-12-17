@@ -43,8 +43,6 @@ public interface IFlora {
 
     public String getMaintenance();
 
-    public String getColor();
-
     public Boolean getWinterLeaves();
 
     public List<BodemEigenschapEnum> getSoilTypes();
@@ -69,8 +67,6 @@ public interface IFlora {
     public void setMaxWidth(Integer maxWidth);
 
     public void setMaintenance(String maintenance);
-
-    public void setColor(String color);
 
     public void setWinterLeaves(Boolean winterLeaves);
 

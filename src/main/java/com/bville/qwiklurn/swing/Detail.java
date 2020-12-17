@@ -14,6 +14,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,7 +55,7 @@ public class Detail extends JFrame {
     private ImmutableTableModel specialPropsModel;
     private JTable specialProps;
     private JButton newButton, saveButton, validateButton, nextFloraButton, previousFloraButton, previousMediaButton, nextMediaButton;
-    private JTextField latinNameText, commonNameText, maxHeightText, maxWidthText, colorText;
+    private JTextField latinNameText, commonNameText, maxHeightText, maxWidthText;
     private JLabel refName;
     private final Map<String, JCheckBox> functionTypeCheckboxes = new TreeMap();
     private final Map<String, JCheckBox> soilTypeCheckboxes = new TreeMap();
@@ -187,7 +188,6 @@ public class Detail extends JFrame {
                         floraElement.setCommonName(commonNameText.getText().trim().toLowerCase());
                         floraElement.setMaxHeight(maxHeightText.getText().trim().length() > 0 ? Integer.valueOf(maxHeightText.getText().trim()) : null);
                         floraElement.setMaxWidth(maxWidthText.getText().trim().length() > 0 ? Integer.valueOf(maxWidthText.getText().trim()) : null);
-                        floraElement.setColor(colorText.getText().trim().length() > 0 ? colorText.getText().trim() : null);
                         floraElement.setFunctionTypes(toSelectedStringsList(functionTypeCheckboxes).stream().map(v -> {
                             return FunctieEnum.parse(v);
                         }).collect(Collectors.toList()));
@@ -414,7 +414,7 @@ public class Detail extends JFrame {
         newProject.addActionListener((e) -> {
             String name = JOptionPane.showInputDialog(meReference, "Welke naam ?");
             Project newP = new Project(name);
-            newP.addMember(new ProjectElement(floraElement));
+//            newP.addMember(new ProjectElement(floraElement));
             //dbMgr.saveProject(newP);
             projectCombo.addItem(newP);
             projectCombo.setSelectedItem(newP);
@@ -475,11 +475,6 @@ public class Detail extends JFrame {
         maxWidthText = new JTextField();
         maxWidthText.setPreferredSize(new Dimension(35, 20));
         validatableComponents.add(maxWidthText);
-
-        PropertyLabel colorLabel = new PropertyLabel("Kleur");
-        colorText = new JTextField();
-        colorText.setPreferredSize(new Dimension(80, 20));
-        validatableComponents.add(colorText);
 
         PropertyLabel blossomMonthsLabel = new PropertyLabel("Bloeimaanden");
         JPanel blossomMonthsPanel = getBlossomMonthsPanel();
@@ -637,12 +632,6 @@ public class Detail extends JFrame {
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(colorLabel, c);
-        c.gridx++;
-        panel.add(colorText, c);
-
-        c.gridx = 0;
-        c.gridy++;
         panel.add(blossomMonthsLabel, c);
         c.gridx++;
         panel.add(blossomMonthsPanel, c);
@@ -714,7 +703,7 @@ public class Detail extends JFrame {
 
         ImageInputStream tgtImage;
         if (floraElement == null || activeMediaIdx <= -1) {
-            tgtImage = new FileImageInputStream(new File(DbManager.filepath_No_Pic));
+            tgtImage = new FileImageInputStream(new File(DbManager.getNoImageFoundFilePath()));
         } else {
             File tgtFile;
             if (floraElement.getMediaReferences().get(activeMediaIdx) instanceof Document) {
@@ -797,8 +786,6 @@ public class Detail extends JFrame {
         maxHeightText.setText(floraElement.getMaxHeight() != null ? "" + floraElement.getMaxHeight() : "");
 
         maxWidthText.setText(floraElement.getMaxWidth() != null ? "" + floraElement.getMaxWidth() : "");
-
-        colorText.setText(floraElement.getColor() != null ? "" + floraElement.getColor() : "");
 
         blossomMonthsCheckboxes.values().forEach(c -> {
             c.setSelected(false);
@@ -893,7 +880,6 @@ public class Detail extends JFrame {
         winterLeafCombo.setEnabled(false);
         maxHeightText.setEnabled(false);
         maxWidthText.setEnabled(false);
-        colorText.setEnabled(false);
         treePruneComboBox.setEnabled(false);
         maintenanceJTextArea.setEnabled(false);
         floraElement.setUpPanelForInterrogation(interrogationSetup);
@@ -1034,7 +1020,7 @@ public class Detail extends JFrame {
         photoPanel.setLayout(new GridBagLayout());
         DefaultGridBagConstraints c = new DefaultGridBagConstraints();
 
-        ImageInputStream firstImage = new FileImageInputStream(new File(DbManager.filepath_No_Pic));
+        ImageInputStream firstImage = new FileImageInputStream(new File(DbManager.getNoImageFoundFilePath()));
         image = new ImagePanel(firstImage);
         zoom = new ImageZoom(image);
 
@@ -1057,7 +1043,7 @@ public class Detail extends JFrame {
         JButton updateButton = new JButton("update");
         updateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fc = new JFileChooser(new File("C:\\Users\\Bart\\Downloads\\UploadQwikLurn"));
+                JFileChooser fc = new JFileChooser(new File("C:\\temp\\QwiklurnUploads"));
                 fc.setFileFilter(new FileFilter() {
                     @Override
                     public boolean accept(File f) {
@@ -1106,7 +1092,7 @@ public class Detail extends JFrame {
                 } else {
                     activeMediaIdx++;
                     maxMediaIdx++;
-                    floraElement.getMediaReferences().add(new File(DbManager.filepath_No_Pic));
+                    floraElement.getMediaReferences().add(new File(DbManager.getNoImageFoundFilePath()));
                 }
                 try {
                     refreshDataList(listIdx, activeMediaIdx, false);
@@ -1208,15 +1194,11 @@ public class Detail extends JFrame {
                     w.setVisible(false);
                     w.dispose();
 
-                    String priceInput = JOptionPane.showInputDialog(meReference, "Welke richtprijs per stuk (gangbare grootte, combi-aankoop) ?");
-                    try {
-                        Double price = priceInput.trim().length() > 0 ? Double.parseDouble(priceInput) : null;
-
+                    PricingCategory price = (PricingCategory) JOptionPane.showInputDialog(meReference, "Welke richtprijs per stuk ?", "Richtprijs", QUESTION_MESSAGE, null, PricingCategory.values(), PricingCategory.A);
+                    if(price != null){
                         Species newS = new Species(null, name, new ArrayList<>(), selectedTechn, price);
                         speciesCombo.addItem(newS);
                         speciesCombo.setSelectedItem(newS);
-                    } catch (NumberFormatException nfe) {
-                        nfe.printStackTrace();
                     }
                 });
                 JButton cancel = new JButton("Cancel");

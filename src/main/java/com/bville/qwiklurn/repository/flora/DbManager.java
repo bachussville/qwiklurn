@@ -48,7 +48,6 @@ import org.bson.types.ObjectId;
  */
 public class DbManager {
 
-    public static final String filepath_No_Pic = "D:\\JavaDev\\NetBeansProjects\\qwiklurn\\Pictures\\NoImageFound.jpg";
     public String dummyFileId = "5df2dfddc653863f9211ad10";
 
     public static final String MEDIA_FILEUPLOAD = "fileUpload";
@@ -127,7 +126,6 @@ public class DbManager {
                             set("mediaReferences", FloraElementWithMedia.getMediaReferences()),
                             set("maxHeight", FloraElementWithMedia.getMaxHeight()),
                             set("maxWidth", FloraElementWithMedia.getMaxWidth()),
-                            set("color", FloraElementWithMedia.getColor()),
                             set("winterLeaf", FloraElementWithMedia.getWinterLeaves()),
                             set("maintenance", FloraElementWithMedia.getMaintenance()),
                             set("modificationDate", new Date()),
@@ -412,7 +410,7 @@ public class DbManager {
                 //Unchanged media reference
             }else if (FloraElement.getMediaReferences().get(i) instanceof File) {
                 ObjectId createdId;
-                if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(filepath_No_Pic)) {
+                if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(getNoImageFoundFilePath())) {
                     createdId = new ObjectId(dummyFileId);
                 } else {
                     try {
@@ -457,6 +455,10 @@ public class DbManager {
         FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
         return FloraSubType.getInstance(document, this);
 
+    }
+
+    public static String getNoImageFoundFilePath(){
+        return ClassLoader.getSystemResource("NoImageFound.jpg").getPath();
     }
 
 }

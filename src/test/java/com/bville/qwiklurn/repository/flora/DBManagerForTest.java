@@ -54,14 +54,13 @@ public class DBManagerForTest extends DbManager {
         Loofboom dummy = new Loofboom();
         dummy.setSubType(FloraSubTypeEnum.LOOFBOOM);
         dummy.setFunctionTypes(new ArrayList<>());
-        dummy.setSpecies(new Species("someSpecie"));
+        dummy.setSpecies(getDummySpecies("someSpecie"));
         dummy.setLatinName(latinName);
         dummy.setCommonName("cName");
         dummy.setMediaReferences(new ArrayList<>());
         dummy.setMaxHeight(1000);
         dummy.setMaxWidth(250);
         dummy.setMaintenance("Maintenance: do it!");
-        dummy.setColor("kakigroen");
         dummy.setWinterLeaves(Boolean.TRUE);
         dummy.setSoilTypes(new ArrayList<>());
         dummy.setSpecialProperties(new EnumMap<>(OpvallendeEigenschapEnum.class));
@@ -73,6 +72,8 @@ public class DBManagerForTest extends DbManager {
 
     public Species getDummySpecies(String latinName) {
         Species dummy = new Species(latinName);
+        dummy.setReproductionTechniques(Arrays.asList(VoortplantingEnum.values()));
+        dummy.setPrice(PricingCategory.B);
         return dummy;
     }
 

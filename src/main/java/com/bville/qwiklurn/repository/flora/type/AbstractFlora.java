@@ -44,7 +44,7 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
     private List<ZonlichtEnum> zonlichtEnums;
     private Map<OpvallendeEigenschapEnum, String> specialProperties;
     private List<Integer> blossomMonths, harvestMonths;
-    private String latinName, commonName, maintenance, color;
+    private String latinName, commonName, maintenance;
     private Integer maxHeight;
     private Integer maxWidth;
     private Boolean winterLeaves;
@@ -119,10 +119,6 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
         }
         if (doc.getString("maintenance") != null) {
             this.setMaintenance(doc.getString("maintenance"));
-        }
-
-        if (doc.getString("color") != null) {
-            this.setColor(doc.getString("color"));
         }
 
         if (doc.getBoolean("winterLeaf") != null) {
@@ -207,10 +203,6 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
             a.put("maintenance", new BsonString("" + getMaintenance()));
         }
 
-        if (getColor() != null) {
-            a.put("color", new BsonString("" + getColor()));
-        }
-
         if (getWinterLeaves() != null) {
             a.put("winterLeaf", new BsonBoolean(getWinterLeaves()));
         }
@@ -258,16 +250,6 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
     @Override
     public void setMaintenance(String maintenance) {
         this.maintenance = maintenance;
-    }
-
-    @Override
-    public String getColor() {
-        return color;
-    }
-
-    @Override
-    public void setColor(String color) {
-        this.color = color;
     }
 
     @Override
@@ -495,7 +477,6 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
         this.maxHeight = defaultContent.getMaxHeight();
         this.maxWidth = defaultContent.getMaxWidth();
         this.maintenance = defaultContent.getMaintenance();
-        this.color = defaultContent.getColor();
         this.winterLeaves = defaultContent.getWinterLeaves();
 
     }
