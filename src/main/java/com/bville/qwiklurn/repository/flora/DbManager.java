@@ -108,7 +108,7 @@ public class DbManager {
                                 return t.getCode();
                             }).collect(Collectors.toList())),
                             set("soilTypes", FloraElementWithMedia.getSoilTypes().stream().map((t) -> {
-                                return t.getCode();
+                                return t.getUniqueid();
                             }).collect(Collectors.toList())),
                             set("solarTypes", FloraElementWithMedia.getSolarTypes().stream().map((t) -> {
                                 return t.getCode();

@@ -57,9 +57,9 @@ public class Detail extends JFrame {
     private JButton newButton, saveButton, saveAsButton, validateButton, nextFloraButton, previousFloraButton, previousMediaButton, nextMediaButton;
     private JTextField latinNameText, commonNameText, maxHeightText, maxWidthText;
     private JLabel refName;
-    private final Map<String, JCheckBox> functionTypeCheckboxes = new TreeMap();
-    private final Map<String, JCheckBox> soilTypeCheckboxes = new TreeMap();
-    private final Map<String, JCheckBox> solarTypeCheckboxes = new TreeMap();
+    private final Map<CodeDescrEnum, JCheckBox> functionTypeCheckboxes = new TreeMap();
+    private final Map<GroupedCodeDescrEnum, JCheckBox> soilTypeCheckboxes = new TreeMap();
+    private final Map<CodeDescrEnum, JCheckBox> solarTypeCheckboxes = new TreeMap();
     private final Map<Integer, JCheckBox> blossomMonthsCheckboxes = new TreeMap();
     private final Map<Integer, JCheckBox> harvestMonthsCheckboxes = new TreeMap();
     private JTextArea maintenanceJTextArea;
@@ -188,13 +188,13 @@ public class Detail extends JFrame {
                         floraElement.setCommonName(commonNameText.getText().trim().toLowerCase());
                         floraElement.setMaxHeight(maxHeightText.getText().trim().length() > 0 ? Integer.valueOf(maxHeightText.getText().trim()) : null);
                         floraElement.setMaxWidth(maxWidthText.getText().trim().length() > 0 ? Integer.valueOf(maxWidthText.getText().trim()) : null);
-                        floraElement.setFunctionTypes(toSelectedStringsList(functionTypeCheckboxes).stream().map(v -> {
+                        floraElement.setFunctionTypes(toSelectedStringsListFromCodeEnum(functionTypeCheckboxes).stream().map(v -> {
                             return FunctieEnum.parse(v);
                         }).collect(Collectors.toList()));
-                        floraElement.setSoilTypes(toSelectedStringsList(soilTypeCheckboxes).stream().map(v -> {
+                        floraElement.setSoilTypes(toSelectedStringsListFromGroupedCodeEnum(soilTypeCheckboxes).stream().map(v -> {
                             return BodemEigenschapEnum.parse(v);
                         }).collect(Collectors.toList()));
-                        floraElement.setSolarTypes(toSelectedStringsList(solarTypeCheckboxes).stream().map(v -> {
+                        floraElement.setSolarTypes(toSelectedStringsListFromCodeEnum(solarTypeCheckboxes).stream().map(v -> {
                             return ZonlichtEnum.parse(v);
                         }).collect(Collectors.toList()));
 
@@ -236,7 +236,7 @@ public class Detail extends JFrame {
 
         saveAsButton = new JButton("Save as..");
         saveAsButton.addActionListener((ActionEvent e) -> {
-            String newName = JOptionPane.showInputDialog("Latin name");
+            String newName = JOptionPane.showInputDialog("Latin name", floraElement.getLatinName());
             if(newName != null){
                 floraElement = floraElement.getCopy(newName.toLowerCase());
                 dbMgr.saveFlora(floraElement);
@@ -280,7 +280,7 @@ public class Detail extends JFrame {
             commonNameText.setBackground(Color.YELLOW);
         }
 
-        List<String> selectedValues = toSelectedStringsList(functionTypeCheckboxes);
+        List<String> selectedValues = toSelectedStringsListFromCodeEnum(functionTypeCheckboxes);
         if (selectedValues.size() == floraElement.getFunctionTypes().size()) {
             selectedValues.removeIf(floraElement.getFunctionTypes().stream().map(s -> {
                 return s.getCode();
@@ -299,7 +299,7 @@ public class Detail extends JFrame {
 
         }
 
-        selectedValues = toSelectedStringsList(soilTypeCheckboxes);
+        selectedValues = toSelectedStringsListFromGroupedCodeEnum(soilTypeCheckboxes);
         if (selectedValues.size() == floraElement.getSoilTypes().size()) {
             selectedValues.removeIf(floraElement.getSoilTypes().stream().map(s -> {
                 return s.getCode();
@@ -318,7 +318,7 @@ public class Detail extends JFrame {
 
         }
 
-        selectedValues = toSelectedStringsList(solarTypeCheckboxes);
+        selectedValues = toSelectedStringsListFromCodeEnum(solarTypeCheckboxes);
         if (selectedValues.size() == floraElement.getSolarTypes().size()) {
             selectedValues.removeIf(floraElement.getSolarTypes().stream().map(s -> {
                 return s.getCode();
@@ -358,12 +358,24 @@ public class Detail extends JFrame {
 
     }
 
-    private List<String> toSelectedStringsList(Map<String, JCheckBox> map) {
+    private List<String> toSelectedStringsListFromCodeEnum(Map<CodeDescrEnum, JCheckBox> map) {
         List<String> actualValues = new ArrayList();
 
         map.forEach((s, c) -> {
             if (c.isSelected()) {
-                actualValues.add(s);
+                actualValues.add(s.getCode());
+            }
+        });
+
+        return actualValues;
+    }
+
+    private List<String> toSelectedStringsListFromGroupedCodeEnum(Map<GroupedCodeDescrEnum, JCheckBox> map) {
+        List<String> actualValues = new ArrayList();
+
+        map.forEach((s, c) -> {
+            if (c.isSelected()) {
+                actualValues.add(s.getUniqueid());
             }
         });
 
@@ -787,13 +799,13 @@ public class Detail extends JFrame {
 
         if (floraElement != null) {
             floraElement.getFunctionTypes().forEach(s -> {
-                functionTypeCheckboxes.get(s.getCode()).setSelected(true);
+                functionTypeCheckboxes.get(s).setSelected(true);
             });
             floraElement.getSoilTypes().forEach(s -> {
-                soilTypeCheckboxes.get(s.getCode()).setSelected(true);
+                soilTypeCheckboxes.get(s).setSelected(true);
             });
             floraElement.getSolarTypes().forEach(s -> {
-                solarTypeCheckboxes.get(s.getCode()).setSelected(true);
+                solarTypeCheckboxes.get(s).setSelected(true);
             });
         }
 
@@ -916,7 +928,7 @@ public class Detail extends JFrame {
 
             cbc.gridx++;
             JCheckBox cb = new JCheckBox(solarType.getDescription());
-            functionTypeCheckboxes.put(solarType.getCode(), cb);
+            functionTypeCheckboxes.put(solarType, cb);
             cb.setName(functieEnums[i].name());
             validatableComponents.add(cb);
 
@@ -941,10 +953,10 @@ public class Detail extends JFrame {
             cbc.gridx = -1;
             for (int i = 0; i < bodemEigenschapEnums.length; i++) {
                 BodemEigenschapEnum bodemEigenschapEnum = bodemEigenschapEnums[i];
-                if (bodemEigenschapEnum.getGroupCode().equalsIgnoreCase(groupCodes.get(x))) {
+                if (bodemEigenschapEnum.getGroup().equalsIgnoreCase(groupCodes.get(x))) {
                     cbc.gridx++;
                     JCheckBox cb = new JCheckBox(bodemEigenschapEnum.getDescription());
-                    soilTypeCheckboxes.put(bodemEigenschapEnum.getCode(), cb);
+                    soilTypeCheckboxes.put(bodemEigenschapEnum, cb);
                     cb.setName(bodemEigenschapEnums[i].name());
                     validatableComponents.add(cb);
                     soilPanel.add(cb, cbc);
@@ -970,7 +982,7 @@ public class Detail extends JFrame {
 
             cbc.gridx++;
             JCheckBox cb = new JCheckBox(zonlichtEnum.getDescription());
-            solarTypeCheckboxes.put(zonlichtEnum.getCode(), cb);
+            solarTypeCheckboxes.put(zonlichtEnum, cb);
             cb.setName(zonlichtEnums[i].name());
             validatableComponents.add(cb);
 

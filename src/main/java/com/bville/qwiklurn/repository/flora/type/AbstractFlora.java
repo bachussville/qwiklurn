@@ -166,7 +166,7 @@ public abstract class AbstractFlora implements IFloraSubType, Comparable<Abstrac
 
         if (getSoilTypes() != null) {
             a.put("soilTypes", getSoilTypes().stream().map((t) -> {
-                return t.getCode();
+                return t.getUniqueid();
             }).collect(Collectors.toList()));
         }
 

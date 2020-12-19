@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Bart
  */
-public enum BodemEigenschapEnum implements CodeDescrEnum{
+public enum BodemEigenschapEnum implements GroupedCodeDescrEnum{
     KALK_RIJK("zuurteGraad", "laag", "kalkrijk"),
     KALK_ARM("zuurteGraad", "gemiddeld", "gemiddeld"),
     KALK_ZUUR("zuurteGraad", "hoog", "zuur"),
@@ -24,7 +24,8 @@ public enum BodemEigenschapEnum implements CodeDescrEnum{
     HUMUS_RIJK("voeding", "rijk", "voedingrijk");
 
     public static BodemEigenschapEnum parse(String code) {
-        return (BodemEigenschapEnum) EnumUtil.parse(code, BodemEigenschapEnum.values());
+        String[] a = code.split("-");
+        return (BodemEigenschapEnum) EnumUtil.parse(a[0], a[1], BodemEigenschapEnum.values());
    }
 
     private String groupCode;
@@ -37,7 +38,7 @@ public enum BodemEigenschapEnum implements CodeDescrEnum{
         this.description = desc;
     }
 
-    public String getGroupCode() {
+    public String getGroup() {
         return groupCode;
     }
 
@@ -51,17 +52,22 @@ public enum BodemEigenschapEnum implements CodeDescrEnum{
         return description;
     }
 
-    
+    @Override
+    public String getUniqueid() {
+        return String.format("%s-%s", getGroup(), getCode());
+    }
+
 
     public static List<String> getGroupCodes() {
         ArrayList<String> groups = new ArrayList<>();
         BodemEigenschapEnum[] all = BodemEigenschapEnum.values();
         for (int i = 0; i < all.length; i++) {
-            if (!groups.contains(all[i].getGroupCode())) {
-                groups.add(all[i].getGroupCode());
+            if (!groups.contains(all[i].getGroup())) {
+                groups.add(all[i].getGroup());
             }
         }
         return groups;
     }
+
 
 }
