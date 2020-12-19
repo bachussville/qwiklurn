@@ -33,4 +33,7 @@ public interface IFloraSubType extends IFlora{
     
     public void restoreBGColorForSubTypeComponents();
 
+    public IFloraSubType getCopy(String newName);
+
+
 }

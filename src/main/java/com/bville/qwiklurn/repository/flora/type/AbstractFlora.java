@@ -29,7 +29,7 @@ import org.bson.types.ObjectId;
  *
  * @author Bart
  */
-public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora> {
+public abstract class AbstractFlora implements IFloraSubType, Comparable<AbstractFlora>, Cloneable {
 
     static final Color COLOR_VALIDATION_FAILED = Color.YELLOW;
     static final Color COLOR_VALIDATION_SUCCES = Color.WHITE;
@@ -505,4 +505,18 @@ public abstract class AbstractFlora implements IFlora, Comparable<AbstractFlora>
         }
     }
 
+    @Override
+    public IFloraSubType getCopy(String newName) {
+        IFloraSubType clone = null;
+        try {
+            clone = (IFloraSubType) this.clone();
+            clone.setId(null);
+            clone.setLatinName(newName);
+            clone.setMediaReferences(new ArrayList<>());
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
 }

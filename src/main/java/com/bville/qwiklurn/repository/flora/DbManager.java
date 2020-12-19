@@ -36,10 +36,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.mongodb.client.result.DeleteResult;
 import org.bson.BsonDocument;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 /**
@@ -261,6 +264,11 @@ public class DbManager {
 
     }
 
+    public boolean deleteFloraById(ObjectId id) {
+        DeleteResult dr = getFloraCollection().deleteOne(eq("_id", new ObjectId(id.toHexString())));
+        return dr.getDeletedCount()>0;
+    }
+
     public Species getSpeciesById(ObjectId speciesId) {
         if (speciesId == null) {
             return null;
@@ -452,6 +460,9 @@ public class DbManager {
     }
 
     private IFloraSubType documentToIFloraSubType(Document document) {
+        if(document == null){
+            return null;
+        }
         FloraSubTypeEnum FloraSubType = FloraSubTypeEnum.parse(document.getString("subType"));
         return FloraSubType.getInstance(document, this);
 

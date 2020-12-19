@@ -54,7 +54,7 @@ public class Detail extends JFrame {
     private OptionalBooleanJCombobox winterLeafCombo;
     private ImmutableTableModel specialPropsModel;
     private JTable specialProps;
-    private JButton newButton, saveButton, validateButton, nextFloraButton, previousFloraButton, previousMediaButton, nextMediaButton;
+    private JButton newButton, saveButton, saveAsButton, validateButton, nextFloraButton, previousFloraButton, previousMediaButton, nextMediaButton;
     private JTextField latinNameText, commonNameText, maxHeightText, maxWidthText;
     private JLabel refName;
     private final Map<String, JCheckBox> functionTypeCheckboxes = new TreeMap();
@@ -234,6 +234,23 @@ public class Detail extends JFrame {
         );
         saveButton.setVisible(actionType.allowsElementUpdate());
 
+        saveAsButton = new JButton("Save as..");
+        saveAsButton.addActionListener((ActionEvent e) -> {
+            String newName = JOptionPane.showInputDialog("Latin name");
+            if(newName != null){
+                floraElement = floraElement.getCopy(newName.toLowerCase());
+                dbMgr.saveFlora(floraElement);
+                dataList.add(floraElement);
+                try {
+                    refreshDataList(dataList.size(),0,true);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
+        saveAsButton.setVisible(actionType.allowsElementUpdate());
+
+
         validateButton = new JButton("Validate");
 
         validateButton.addActionListener(
@@ -248,9 +265,8 @@ public class Detail extends JFrame {
         validateButton.setVisible(actionType.allowsElementIntgerrogation());
 
         panel.add(newButton);
-
         panel.add(saveButton);
-
+        panel.add(saveAsButton);
         panel.add(validateButton);
 
         return panel;
@@ -1195,7 +1211,7 @@ public class Detail extends JFrame {
                     w.dispose();
 
                     PricingCategory price = (PricingCategory) JOptionPane.showInputDialog(meReference, "Welke richtprijs per stuk ?", "Richtprijs", QUESTION_MESSAGE, null, PricingCategory.values(), PricingCategory.A);
-                    if(price != null){
+                    if (price != null) {
                         Species newS = new Species(null, name, new ArrayList<>(), selectedTechn, price);
                         speciesCombo.addItem(newS);
                         speciesCombo.setSelectedItem(newS);

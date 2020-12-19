@@ -27,6 +27,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -43,15 +44,20 @@ public class DbManagerTest {
     public DbManagerTest() {
     }
 
+    @BeforeClass
+    public static void beforeClass(){
+        dbMgr = new DBManagerForTest(null);
+        dbMgr.setUpDatabase();
+   }
+
     @Before
     public void before() {
-        dbMgr = new DBManagerForTest(null);
-        //dbMgr.setUpDatabase();
+        dbMgr.clearAllCollections();
     }
 
     @Test
     public void testListAlphabetically() {
-        dbMgr.clearAllCollections();
+        
         Document doc1 = dbMgr.persistTree("b_comesLast");
         Document doc2 = dbMgr.persistTree("a_ComesFirst");
 
@@ -62,9 +68,37 @@ public class DbManagerTest {
 
     }
 
+
+    @Test
+    public void findFloraById() {
+        Loofboom l1 = dbMgr.getDummyTree("1");
+
+        dbMgr.saveFlora(l1);
+
+        IFloraSubType r = dbMgr.getFloraById(l1.getId());
+        assertEquals(l1.getId(), r.getId());
+    }
+
+    @Test
+    public void deleteFloraById() {
+        
+        Loofboom l1 = dbMgr.getDummyTree("1");
+
+        dbMgr.saveFlora(l1);
+
+        IFloraSubType r = dbMgr.getFloraById(l1.getId());
+        assertEquals(l1.getId(), r.getId());
+
+        boolean result  = dbMgr.deleteFloraById(l1.getId());
+        assertTrue(result);
+        r = dbMgr.getFloraById(l1.getId());
+        assertNull(r);
+    }
+
+
     @Test
     public void findFloraByFilter() {
-        dbMgr.clearAllCollections();
+        
         Document doc1 = dbMgr.persistTree("b_comesLast");
         Document doc2 = dbMgr.persistTree("a_ComesFirst");
 
@@ -77,7 +111,7 @@ public class DbManagerTest {
 
     @Test
     public void findFloraByFilter_nullValue() {
-        dbMgr.clearAllCollections();
+        
         Document doc1 = dbMgr.persistTree("b_comesLast");
         Document doc2 = dbMgr.persistTree("a_ComesFirst");
 
@@ -157,7 +191,7 @@ public class DbManagerTest {
 
     @Test
     public void saveTreeClass_newWithNewSpecies() {
-        dbMgr.clearAllCollections();
+        
         Loofboom newTree = getCompleteTreeClass(true);
         assertNull(newTree.getId());
         assertNull(newTree.getSpecies().getId());
@@ -175,7 +209,7 @@ public class DbManagerTest {
 
     @Test
     public void saveTreeClass_newWithExistingSpecies() {
-        dbMgr.clearAllCollections();
+        
 
         dbMgr.saveSpecies(dbMgr.getDummySpecies("species"));
         Document dbSpecies = (Document) dbMgr.getSpeciesCollection().find().first();
@@ -199,7 +233,7 @@ public class DbManagerTest {
 
     @Test
     public void saveTreeClass_existingWithNewSpecies() {
-        dbMgr.clearAllCollections();
+        
         Loofboom oldTree = getCompleteTreeClass(true);
         assertNull(oldTree.getId());
         assertNull(oldTree.getSpecies().getId());
@@ -221,7 +255,7 @@ public class DbManagerTest {
 
     @Test
     public void saveTreeClass_existingWithExistingSpecies() {
-        dbMgr.clearAllCollections();
+        
         dbMgr.saveSpecies(dbMgr.getDummySpecies("species"));
         Document dbSpecies = (Document) dbMgr.getSpeciesCollection().find().first();
 
@@ -282,7 +316,7 @@ public class DbManagerTest {
 
     @Test
     public void addTreeToProject() {
-        dbMgr.clearAllCollections();
+        
         Loofboom floraElement = dbMgr.getDummyTree("tree1");
         dbMgr.saveFlora(floraElement);
 

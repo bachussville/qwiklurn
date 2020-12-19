@@ -7,9 +7,8 @@ package com.bville.qwiklurn.swing;
 
 import com.bville.qwiklurn.repository.flora.DbManager;
 import com.bville.qwiklurn.repository.flora.type.interfaces.IFloraSubType;
-import java.awt.Dimension;
-import java.awt.GridBagLayout;
-import java.awt.HeadlessException;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -24,19 +23,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
+
 import org.bson.types.ObjectId;
 
 /**
- *
  * @author Bart
  */
 public class StudyList extends JFrame {
@@ -137,7 +134,7 @@ public class StudyList extends JFrame {
         dataList = newData;
         DateTimeFormatter fm = DateTimeFormatter.ISO_DATE_TIME;
 
-        for (int i = 0; i < tModel.getRowCount();) {
+        for (int i = 0; i < tModel.getRowCount(); ) {
             tModel.removeRow(0);
         }
 
@@ -169,72 +166,103 @@ public class StudyList extends JFrame {
 
     private JTable getTable(ImmutableTableModel tModel) {
         JTable table = new JTable(tModel);
-        table.addMouseListener(new MouseListener() {
+        //table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.addKeyListener(new KeyListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    try {
-                        Detail det = new Detail(dbMgr, "Detail", actionType, interrogationSetup);
-                        det.setDataList(dataList);
+            public void keyTyped(KeyEvent keyEvent) {
+                if (keyEvent.getKeyChar() == KeyEvent.VK_DELETE) {
 
-                        List<IFloraSubType> sortedDataList = new ArrayList(dataList.size());
-                        for (int i = 0; i < dataList.size(); i++) {
-                            int modelIndex = table.getRowSorter().convertRowIndexToModel(i);
-                            sortedDataList.add(dataList.get(modelIndex));
-                        }
-                        det.setDataList(sortedDataList);
+                    List<ObjectId> oids = Arrays.stream(table.getSelectedRows())
+                            .map(r -> {return table.getRowSorter().convertRowIndexToModel(r);})
+                            .mapToObj(r -> {
+                        return dataList.get(r).getId();
+                    }).collect(Collectors.toList());
 
-                        det.refreshDataList(table.getSelectedRow(), 0, false);
-                        det.setVisible(true);
-                        det.addWindowListener(new WindowListener() {
-                            public void windowOpened(WindowEvent e) {
-                            }
+                    oids.forEach(oid -> {
+                        dbMgr.deleteFloraById(oid);
+                        dataList.removeIf(x -> x.getId().equals(oid));
+                    });
 
-                            public void windowClosing(WindowEvent e) {
-
-                            }
-
-                            public void windowClosed(WindowEvent e) {
-                                meReference.refreshData();
-                            }
-
-                            public void windowIconified(WindowEvent e) {
-                            }
-
-                            public void windowDeiconified(WindowEvent e) {
-                            }
-
-                            public void windowActivated(WindowEvent e) {
-                            }
-
-                            public void windowDeactivated(WindowEvent e) {
-                            }
-                        }
-                        );
-                    } catch (HeadlessException | IOException ex) {
-                        Logger.getLogger(StudyList.class
-                                .getName()).log(Level.SEVERE, null, ex);
-                    }
+                    resetTableData(tModel, dataList);
                 }
             }
 
             @Override
+            public void keyPressed(KeyEvent keyEvent) {
 
-            public void mousePressed(MouseEvent e) {
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
+            public void keyReleased(KeyEvent keyEvent) {
 
-            @Override
-            public void mouseEntered(MouseEvent e) {
             }
+        });
+        table.addMouseListener(new MouseListener() {
+                                   @Override
+                                   public void mouseClicked(MouseEvent e) {
+                                       if (e.getClickCount() == 2) {
+                                           try {
+                                               Detail det = new Detail(dbMgr, "Detail", actionType, interrogationSetup);
+                                               det.setDataList(dataList);
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-        }
+                                               List<IFloraSubType> sortedDataList = new ArrayList(dataList.size());
+                                               for (int i = 0; i < dataList.size(); i++) {
+                                                   int modelIndex = table.getRowSorter().convertRowIndexToModel(i);
+                                                   sortedDataList.add(dataList.get(modelIndex));
+                                               }
+                                               det.setDataList(sortedDataList);
+
+                                               det.refreshDataList(table.getSelectedRow(), 0, false);
+                                               det.setVisible(true);
+                                               det.addWindowListener(new WindowListener() {
+                                                                         public void windowOpened(WindowEvent e) {
+                                                                         }
+
+                                                                         public void windowClosing(WindowEvent e) {
+
+                                                                         }
+
+                                                                         public void windowClosed(WindowEvent e) {
+                                                                             meReference.refreshData();
+                                                                         }
+
+                                                                         public void windowIconified(WindowEvent e) {
+                                                                         }
+
+                                                                         public void windowDeiconified(WindowEvent e) {
+                                                                         }
+
+                                                                         public void windowActivated(WindowEvent e) {
+                                                                         }
+
+                                                                         public void windowDeactivated(WindowEvent e) {
+                                                                         }
+                                                                     }
+                                               );
+                                           } catch (HeadlessException | IOException ex) {
+                                               Logger.getLogger(StudyList.class
+                                                       .getName()).log(Level.SEVERE, null, ex);
+                                           }
+                                       }
+                                   }
+
+                                   @Override
+
+                                   public void mousePressed(MouseEvent e) {
+                                   }
+
+                                   @Override
+                                   public void mouseReleased(MouseEvent e) {
+                                   }
+
+                                   @Override
+                                   public void mouseEntered(MouseEvent e) {
+                                   }
+
+                                   @Override
+                                   public void mouseExited(MouseEvent e) {
+                                   }
+                               }
         );
 
         table.setAutoCreateRowSorter(true);
