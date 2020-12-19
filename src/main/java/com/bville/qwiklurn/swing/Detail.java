@@ -719,7 +719,7 @@ public class Detail extends JFrame {
 
         ImageInputStream tgtImage;
         if (floraElement == null || activeMediaIdx <= -1) {
-            tgtImage = new FileImageInputStream(new File(DbManager.getNoImageFoundFilePath()));
+            image = new ImagePanel(DbManager.noImageUrl());
         } else {
             File tgtFile;
             if (floraElement.getMediaReferences().get(activeMediaIdx) instanceof Document) {
@@ -731,8 +731,8 @@ public class Detail extends JFrame {
             }
 
             tgtImage = new FileImageInputStream(tgtFile);
+            image = new ImagePanel(tgtImage);
         }
-        image = new ImagePanel(tgtImage);
         zoom.setImage(image);
         zoom.reset();
         scrollPane.setViewportView(zoom.imagePanel);
@@ -1036,8 +1036,7 @@ public class Detail extends JFrame {
         photoPanel.setLayout(new GridBagLayout());
         DefaultGridBagConstraints c = new DefaultGridBagConstraints();
 
-        ImageInputStream firstImage = new FileImageInputStream(new File(DbManager.getNoImageFoundFilePath()));
-        image = new ImagePanel(firstImage);
+        image = new ImagePanel(DbManager.noImageUrl());
         zoom = new ImageZoom(image);
 
         previousMediaButton = new JButton("<<");
@@ -1108,7 +1107,7 @@ public class Detail extends JFrame {
                 } else {
                     activeMediaIdx++;
                     maxMediaIdx++;
-                    floraElement.getMediaReferences().add(new File(DbManager.getNoImageFoundFilePath()));
+                    floraElement.getMediaReferences().add(null);
                 }
                 try {
                     refreshDataList(listIdx, activeMediaIdx, false);

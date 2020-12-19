@@ -19,6 +19,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.io.File;
+import java.net.URL;
 import javax.imageio.stream.ImageInputStream;
 
 /**
@@ -47,6 +48,11 @@ class ImagePanel extends JPanel {
 
     public ImagePanel(ImageInputStream imgIS) throws IOException {
         loadImage(imgIS);
+        scale = 1.0;
+        setBackground(Color.BLACK);
+    }
+    public ImagePanel(URL url) throws IOException {
+        loadImage(url);
         scale = 1.0;
         setBackground(Color.BLACK);
     }
@@ -83,6 +89,11 @@ class ImagePanel extends JPanel {
     }
 
     private void loadImage(ImageInputStream imgStream) throws IOException {
+
+        image = ImageIO.read(imgStream);
+
+    }
+    private void loadImage(URL imgStream) throws IOException {
 
         image = ImageIO.read(imgStream);
 

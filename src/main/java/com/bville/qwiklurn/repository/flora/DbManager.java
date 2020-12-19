@@ -24,11 +24,9 @@ import com.mongodb.client.model.Filters;
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Updates.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import java.io.*;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +40,9 @@ import org.bson.BsonDocument;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+
+import javax.imageio.stream.ImageInputStreamImpl;
 
 /**
  *
@@ -418,7 +417,7 @@ public class DbManager {
                 //Unchanged media reference
             }else if (FloraElement.getMediaReferences().get(i) instanceof File) {
                 ObjectId createdId;
-                if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(getNoImageFoundFilePath())) {
+                if (((File) FloraElement.getMediaReferences().get(i)).getAbsolutePath().equalsIgnoreCase(getNoImageFoundFileName())) {
                     createdId = new ObjectId(dummyFileId);
                 } else {
                     try {
@@ -468,8 +467,12 @@ public class DbManager {
 
     }
 
-    public static String getNoImageFoundFilePath(){
-        return ClassLoader.getSystemResource("NoImageFound.jpg").getPath();
+    public static URL noImageUrl(){
+        return ClassLoader.getSystemResource(getNoImageFoundFileName());
+    }
+
+    public static String getNoImageFoundFileName(){
+        return "NoImageFound.jpg";
     }
 
 }
